@@ -45,7 +45,7 @@ class MateriData extends Model
         return $query;
     }
 
-    public function get_datapengiriman(Request $request)
+    public function get_datavideo(Request $request)
     {
         $query = $this->_get_datatables_query($request);
         if ($request->input('length') != -1) {

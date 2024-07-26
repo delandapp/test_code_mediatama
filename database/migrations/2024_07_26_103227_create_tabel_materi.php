@@ -1,20 +1,24 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateVideoMaterialsAndRequestsTable extends Migration
+return new class extends Migration
 {
     public function up()
     {
         // Tabel untuk menyimpan materi video
         Schema::create('video_materials', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('id_user');
             $table->string('title');
-            $table->string('video_url');
-            $table->string('thumbnail_url');
+            $table->string('video');
+            $table->string('thumbnail');
             $table->softDeletes();
             $table->timestamps();
+            $table->foreign('id_user')->references('id')->on('users')->onDelete('cascade');
+
         });
 
         Schema::create('video_requests', function (Blueprint $table) {
@@ -35,4 +39,4 @@ class CreateVideoMaterialsAndRequestsTable extends Migration
         Schema::dropIfExists('video_requests');
         Schema::dropIfExists('video_materials');
     }
-}
+};
