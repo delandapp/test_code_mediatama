@@ -43,11 +43,19 @@ return [
             'visibility' => 'public',
             'throw' => false,
         ],
-        
+
         'video_materi' => [
             'driver' => 'local',
             'root' => storage_path('app/public/image/uploads/video/materi'),
             'url' => env('APP_URL') . '/storage/image/uploads/video/materi',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
+        'thumbnail_materi' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/image/uploads/thumbnail'),
+            'url' => env('APP_URL') . '/storage/image/uploads/thumbnail',
             'visibility' => 'public',
             'throw' => false,
         ],
