@@ -12,13 +12,13 @@ return new class extends Migration
         Schema::create('video_materials', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('id_user');
+            $table->string('kode_materi');
             $table->string('title');
             $table->string('video');
-            $table->string('thumbnail');
+            $table->string('thumbnail')->nullable();
             $table->softDeletes();
             $table->timestamps();
             $table->foreign('id_user')->references('id')->on('users')->onDelete('cascade');
-
         });
 
         Schema::create('video_requests', function (Blueprint $table) {

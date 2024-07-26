@@ -8,6 +8,7 @@
                 <thead>
                     <tr>
                         <th>No</th>
+                        <th>Kode Materi</th>
                         <th>Title</th>
                         <th>Video</th>
                         <th>Thumbnail</th>
@@ -42,8 +43,6 @@
 @section('scripts')
     <script type="module">
         $(document).ready(function() {
-            const $previewImage = $(".preview-image");
-            const $previewVideo = $(".preview-video");
             let table = new DataTable('#videoTable', {
                 "destroy": true,
                 "processing": true,
@@ -67,8 +66,8 @@
                         }
                     },
                     {
-                        targets: [1],
-                        orderable: true,
+                        targets: [1, 3, 4],
+                        orderable: false,
                         className: "dark:text-gray-300"
                     },
                     {
@@ -77,12 +76,7 @@
                         className: "dark:text-gray-300"
                     },
                     {
-                        targets: [3],
-                        orderable: true,
-                        className: "dark:text-gray-300"
-                    },
-                    {
-                        targets: [4],
+                        targets: [5],
                         orderable: false,
                         className: "dark:text-gray-300 p-4 space-x-2 whitespace-nowrap"
                     }
@@ -108,7 +102,20 @@
                 event.preventDefault();
                 const file = $('#image').prop('files')[0];
                 const fileVideo = $('#video').prop('files')[0];
-                if (fileVideo == undefined) {
+                const formData = {};
+                $(this).serializeArray().forEach(function(item) {
+                    formData[item.name] = item.value;
+                });
+                if (file == undefined && $previewImage.hasClass('flex')) {
+                    formData.thumbnailImage = "keep";
+                } else if ($previewImage.hasClass('hidden')) {
+                    formData.thumbnailImage = "hapus";
+                } else {
+                    formData.thumbnail = file;
+                }
+                if (fileVideo == undefined && $previewVideo.hasClass('flex')) {
+                    formData.videoMateri = "keep";
+                } else if ($previewVideo.hasClass('hidden')) {
                     $(`input[name="video"]`)
                         .next(".error-message")
                         .text(
@@ -120,18 +127,10 @@
                         .removeClass("active border-gray-300 border-green-500")
                         .addClass("border-red-500");
                     return
-                }
-                const formData = {};
-                $(this).serializeArray().forEach(function(item) {
-                    formData[item.name] = item.value;
-                });
-                if (file == undefined && $previewImage.hasClass('flex')) {
-                    formData.thumbnailImage = "keep";
-                } else if ($previewImage.hasClass('hidden')) {
-                    formData.thumbnailImage = "hapus";
                 } else {
-                    formData.thumbnailImage = file;
+                    formData.video = fileVideo;
                 }
+
                 let url = $(this).attr('href');
                 $('#ModalButtonText, #loading-button').toggleClass('hidden');
 
@@ -147,17 +146,32 @@
                     })
                     $(this)[0].reset();
                     removePreview();
+                    removePreviewVideo();
                     $('#Modal').toggleClass('hidden').toggleClass('flex');
                     $('#form input').removeClass('border-red-500');
                     $('#form .error-message').text('');
                 }).catch(error => {
                     const errors = error.response.data.errors;
                     for (const field in errors) {
-                        $(`input[name="${field}"] , select[name="${field}"] , textarea[name="${field}"]`)
-                            .addClass(
-                                'border-red-500').next('.error-message').text(errors[field][
-                                0
-                            ]);
+                        console.log(field);
+                        if (field == 'video' || field == 'thumbnail') {
+                            $(`input[name=${field}]`)
+                                .next(".error-message")
+                                .text(
+                                    errors[field][0]
+                                )
+                                .addClass("flex")
+                                .removeClass("hidden");
+                            $(field == 'thumbnail' ? ".drop-area" : ".drop-area-video")
+                                .removeClass("active border-gray-300 border-green-500")
+                                .addClass("border-red-500");
+                        } else {
+                            $(`input[name="${field}"]`)
+                                .addClass(
+                                    'border-red-500').next('.error-message').text(errors[field][
+                                    0
+                                ]);
+                        }
                     }
 
                     Toast.fire({
@@ -172,23 +186,81 @@
 
             $(document).on('click', '#editModalBtn', function(event) {
                 event.preventDefault();
-                $('#form').attr('href', '/user/edit/' + $(this).attr('href').split('/').pop());
-                $('#modalLabel').text('Edit User');
+                $('#form').attr('href', '/video/edit/' + $(this).attr('href').split('/').pop());
+                $('#modalLabel').text('Edit Materi');
                 $('#loadingModal').toggleClass('hidden').toggleClass('flex');
-                var userId = $(this).attr('href').split('/').pop();
-                axios.get('/user/' + userId)
-                    .then(response => {
-                        var userData = response.data.data;
-                        $('#name').val(userData.name);
-                        $('#email').val(userData.email);
-                        $('#Modal').toggleClass('hidden').toggleClass('flex');
-                        $('#loadingModal').toggleClass('hidden').toggleClass('flex');
-                    })
-                    .catch(error => {
-                        console.error(error);
-                        $('#loadingModal').toggleClass('hidden').toggleClass('flex');
-                    });
+                var videoId = $(this).attr('href').split('/').pop();
+                editVideo(videoId);
             });
+
+            $(document).on('click', '#deleteModalBtn', function(event) {
+                event.preventDefault();
+                Swal.fire({
+                    title: "Apakah Kamu yakin?",
+                    text: "Menghapus data ini!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, delete it!"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        let videoId = $(this).attr('href').split('/').pop();
+                        axios.delete('/video/' + videoId).then(response => {
+                            Swal.fire({
+                                title: "Deleted!",
+                                text: "Data berhasil di delete.",
+                                icon: "success"
+                            });
+                            table.draw(true);
+                        }).catch(error => {
+                            Toast.fire({
+                                icon: 'error',
+                                title: error.response.data.message
+                            })
+                        })
+                    }
+                });
+            })
+
+            async function editVideo(videoId) {
+                try {
+                    const response = await axios.get('/video/' + videoId);
+                    videoData = response.data.data;
+                    var videoData = response.data.data;
+                    let urlImage = "{{ Storage::disk('materi')->url('') }}" + videoData
+                        .thumbnail;
+                    let urlVideo = "{{ Storage::disk('materi')->url('') }}" + videoData
+                        .video;
+                    $('#title').val(videoData.title);
+                    $imageLabel.addClass('hidden').removeClass('flex');
+                    $(`input[name="thumbnail"]`).next('.error-message').text('').addClass('hidden');
+                    $('.drop-area').removeClass('border-red-500').addClass('border-green-500');
+                    $previewImage.css('background-image',
+                        `url("${urlImage}")`
+                    );
+                    $previewImage.removeClass('hidden').addClass('flex');
+                    $dropArea.removeClass('active border-green-500').removeClass('border-red-500').addClass(
+                        'border-green-500');
+                    $previewContainer.removeClass('hidden');
+                    $previewContainer.addClass('flex');
+                    $imageLabelVideo.addClass('hidden').removeClass('flex');
+                    $(`input[name="thumbnail"]`).next('.error-message').text('').addClass('hidden');
+                    $previewVideo.attr('src',
+                        urlVideo
+                    );
+                    $previewVideo.removeClass('hidden').addClass('flex');
+                    $dropAreaVideo.removeClass('active').removeClass('border-red-500').addClass(
+                        'border-green-500');
+                    $previewContainerVideo.removeClass('hidden');
+                    $previewContainerVideo.addClass('flex');
+                } catch (error) {
+                    console.error(error);
+                } finally {
+                    $('#Modal').toggleClass('hidden').toggleClass('flex');
+                    $('#loadingModal').toggleClass('hidden').toggleClass('flex');
+                }
+            }
 
             $(document).on('click', '#tambahModalBtn', function(event) {
                 event.preventDefault();
@@ -216,10 +288,239 @@
                 timerProgressBar: true,
             });
 
-            window.Echo.channel('laravel_database_user-create-channel')
-                .listen('.user-create-event', (e) => {
-                    table.draw();
+            window.Echo.channel('laravel_database_materi-channel')
+                .listen('.materi-create-event', (e) => {
+                    const newData = e.message;
+                    table.row.add(newData, 0).draw(false);
+                })
+                .listen('.materi-edit-event', (e) => {
+                    const editData = e.message;
+                    const rowIndex = table
+                        .rows()
+                        .data()
+                        .toArray()
+                        .findIndex(row => row[1] === editData[1]);
+
+                    console.log(rowIndex);
+
+                    if (rowIndex !== -1) {
+                        table.row(rowIndex).data(editData).draw(
+                            false);
+                    } else {
+                        console.error("Row not found!");
+                    }
+                })
+                .listen('.materi-delete-event', (e) => {
+                    const deleteData = e.message;
+                    const rowIndex = table
+                        .rows()
+                        .data()
+                        .toArray()
+                        .findIndex(row => row[1] === deleteData[1]);
+
+                    console.log(rowIndex);
+
+                    if (rowIndex !== -1) {
+                        table.row(rowIndex).remove().draw(false);
+                    } else {
+                        console.error("Row not found!");
+                    }
                 });
+
+            const $dropAreaVideo = $(".drop-area-video");
+            const $fileInputVideo = $("#video");
+            const $imageLabelVideo = $("#video-label");
+            const $previewContainerVideo = $(".preview-video-container");
+            const $previewVideo = $(".preview-video");
+            const $closeButtonVideo = $(".close-button-video");
+            const $fileNameVideo = $(".file-name-video");
+            const allowedTypesVideo = ["video/mp4", "video/webm", "video/ogg"];
+            const maxSizeVideo = 20 * 1024 * 1024; // 20 MB
+
+            $dropAreaVideo.on("dragover", (event) => {
+                event.preventDefault();
+                $dropAreaVideo.addClass("active");
+            });
+
+            $dropAreaVideo.on("dragleave", () => {
+                $dropAreaVideo.removeClass("active");
+            });
+
+            $dropAreaVideo.on("drop", (event) => {
+                event.preventDefault();
+                const file = event.originalEvent.dataTransfer.files[0];
+                showPreviewVideo(file);
+                showFileNameVideo(file);
+            });
+
+            $fileInputVideo.on("change", () => {
+                const file = $fileInputVideo[0].files[0];
+                showPreviewVideo(file);
+                showFileNameVideo(file);
+            });
+
+            $closeButtonVideo.on("click", (event) => {
+                event.preventDefault();
+                removePreviewVideo();
+            });
+
+            function removePreviewVideo() {
+                $fileInputVideo.val("");
+                $previewVideo.find("source").attr("src", "");
+                $previewVideo[0].load();
+                $fileNameVideo.text("");
+                $previewVideo.addClass("hidden");
+                $previewContainerVideo.addClass("hidden");
+                $previewVideo.removeClass("flex");
+                $dropAreaVideo
+                    .removeClass("border-green-500 border-red-500")
+                    .addClass("border-gray-300");
+                $imageLabelVideo.removeClass("hidden").addClass("flex");
+            }
+
+            function showPreviewVideo(file) {
+                if (!allowedTypesVideo.includes(file.type) || file.size > maxSizeVideo) {
+                    $(`input[name="video"]`)
+                        .next(".error-message")
+                        .text(
+                            "File harus berupa berformat MP4, WEBP atau OGG dan ukuran maksimal 20 MB"
+                        )
+                        .addClass("flex")
+                        .removeClass("hidden");
+                    $(".drop-area-video")
+                        .removeClass("active border-gray-300 border-green-500")
+                        .addClass("border-red-500");
+                    $fileInputVideo.val("");
+                    $previewVideo.removeClass("flex").addClass("hidden");
+                    $previewContainerVideo.addClass("hidden");
+                    $previewVideo.find("source").attr("src", "");
+                    $imageLabelVideo.addClass("flex").removeClass("hidden");
+                    return;
+                }
+
+                $(`input[name="video"]`)
+                    .next(".error-message")
+                    .text("")
+                    .addClass("hidden");
+                $(".drop-area-video")
+                    .removeClass("border-red-500")
+                    .addClass("border-green-500");
+
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => {
+                    $imageLabelVideo.addClass("hidden").removeClass("flex");
+                    const videoElement = $previewVideo[0];
+                    videoElement.src = reader.result;
+                    videoElement.load();
+                    video
+                    $previewVideo.removeClass("hidden");
+                    $dropAreaVideo.removeClass("active");
+                    $previewContainerVideo.removeClass("hidden");
+                    $previewContainerVideo.addClass("flex");
+                };
+            }
+
+            function showFileNameVideo(file) {
+                $fileNameVideo.text(file.name);
+                $fileNameVideo.show();
+            }
+
+            const $dropArea = $(".drop-area");
+            const $fileInput = $("#image");
+            const $imageLabel = $("#image-label");
+            const $previewContainer = $(".preview-container");
+            const $previewImage = $(".preview-image");
+            const $closeButton = $(".close-button");
+            const $fileName = $(".file-name");
+            const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
+            const maxSize = 10 * 1024 * 1024;
+
+            $dropArea.on("dragover", (event) => {
+                event.preventDefault();
+                $dropArea.addClass("active");
+            });
+
+            $dropArea.on("dragleave", () => {
+                $dropArea.removeClass("active");
+            });
+
+            $dropArea.on("drop", (event) => {
+                event.preventDefault();
+                const file = event.originalEvent.dataTransfer.files[0];
+                showPreview(file);
+                showFileName(file);
+            });
+
+            $fileInput.on("change", () => {
+                const file = $fileInput[0].files[0];
+                showPreview(file);
+                showFileName(file);
+            });
+
+            $closeButton.on("click", (event) => {
+                event.preventDefault();
+                removePreview();
+            });
+
+            function removePreview() {
+                $fileInput.val("");
+                $previewImage.css("background-image", "");
+                $fileName.text("");
+                $previewImage.addClass("hidden");
+                $previewContainer.addClass("hidden");
+                $previewImage.removeClass("flex");
+                $dropArea
+                    .removeClass("border-green-500 border-red-500")
+                    .addClass("border-gray-300");
+                $imageLabel.removeClass("hidden").addClass("flex");
+            }
+
+            function showPreview(file) {
+                if (!allowedTypes.includes(file.type) || file.size > maxSize) {
+                    $(`input[name="thumbnail"]`)
+                        .next(".error-message")
+                        .text(
+                            "File harus berupa berformat JPEG, PNG, atau GIF dan ukuran maksimal 10 MB"
+                        )
+                        .addClass("flex")
+                        .removeClass("hidden");
+                    $(".drop-area")
+                        .removeClass("active border-gray-300 border-green-500")
+                        .addClass("border-red-500");
+                    $fileInput.val("");
+                    $previewImage.removeClass("flex").addClass("hidden");
+                    $previewContainer.addClass("hidden");
+                    $previewImage.css("background-image", "");
+                    $imageLabel.addClass("flex").removeClass("hidden");
+                    return;
+                }
+
+                if (file.type.startsWith("image/")) {
+                    $(`input[name="thumbnail"]`)
+                        .next(".error-message")
+                        .text("")
+                        .addClass("hidden");
+                    $(".drop-area")
+                        .removeClass("border-red-500")
+                        .addClass("border-green-500");
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = () => {
+                        $imageLabel.addClass("hidden").removeClass("flex");
+                        $previewImage.css("background-image", `url(${reader.result})`);
+                        $previewImage.removeClass("hidden");
+                        $dropArea.removeClass("active");
+                        $previewContainer.removeClass("hidden");
+                        $previewContainer.addClass("flex");
+                    };
+                }
+            }
+
+            function showFileName(file) {
+                $fileName.text(file.name);
+                $fileName.show();
+            }
         });
     </script>
 @endsection

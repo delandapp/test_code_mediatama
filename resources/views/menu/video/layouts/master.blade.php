@@ -18,7 +18,7 @@
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
     {{-- Vite CSS --}}
-    @vite(['resources/js/app.js', 'resources/js/index.js','resources/css/dataTables.css', 'resources/css/app.css'])
+    @vite(['resources/js/app.js', 'resources/js/index.js', 'resources/css/dataTables.css', 'resources/css/app.css'])
 
 
 </head>
@@ -30,5 +30,3 @@
     @endsection
     @yield('scripts')
 </body>
-@include('menu.video.js.upload-image')
-@include('menu.video.js.upload-video')

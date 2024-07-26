@@ -4,7 +4,7 @@ namespace App\Http\Requests\Materi;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class MateriCreateRequest extends FormRequest
+class MateriEditRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -19,10 +19,8 @@ class MateriCreateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id_user' => 'nullable',
-            'kode_materi' => 'nullable',
             'title' => 'required',
-            'video' => 'required|mimes:mp4',
+            'video' => 'nullable|mimes:mp4',
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10000'
         ];
     }
