@@ -7,7 +7,7 @@ import DataTable from "datatables.net-dt";
 import Echo from "laravel-echo";
 import socketio from "socket.io-client";
 import Swal from "sweetalert2";
-import 'datatables.net-dt/js/dataTables.tailwindcss.js';
+import "datatables.net-dt/js/dataTables.tailwindcss.js";
 const csrfToken = document.head.querySelector(
     'meta[name="csrf-token"]'
 ).content;
