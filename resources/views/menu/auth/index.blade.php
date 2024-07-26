@@ -77,10 +77,10 @@
                 $('.error-message').empty(); // Clear error messages
                 $('.input-field').removeClass('error'); // Clear error styling
 
-                axios.post('/auth/', formData)
+                axios.post('/', formData)
                     .then(response => {
                         if (response.data.message === 'success') {
-                            window.location.href = '/';
+                            window.location.href = '/user';
                         }
                     })
                     .catch(error => {

@@ -8,7 +8,6 @@ import Echo from "laravel-echo";
 import socketio from "socket.io-client";
 import Swal from "sweetalert2";
 import "@fortawesome/fontawesome-free/js/all.js";
-import "./index.js";
 const csrfToken = document.head.querySelector(
     'meta[name="csrf-token"]'
 ).content;
