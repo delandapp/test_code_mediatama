@@ -16,6 +16,7 @@
         "flowbite": "^2.4.1",
         "jquery": "^3.7.1",
         "select2": "^4.1.0-rc.0",
+        "laravel-echo": "^1.15.1",
         "socket.io-client": "^2.3.0",
         "sweetalert2": "^11.12.3"
     }

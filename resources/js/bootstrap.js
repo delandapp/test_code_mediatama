@@ -3,6 +3,9 @@ import "flowbite";
 import $ from "jquery";
 import jQuery from "jquery";
 import select2 from "select2";
+import DataTable from "datatables.net-dt";
+import Echo from "laravel-echo";
+import socketio from "socket.io-client";
 const csrfToken = document.head.querySelector(
     'meta[name="csrf-token"]'
 ).content;
