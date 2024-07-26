@@ -12,6 +12,7 @@
         "vite": "^5.0"
     },
     "dependencies": {
+        "datatables.net-dt": "^2.1.2",
         "flowbite": "^2.4.1",
         "jquery": "^3.7.1",
         "select2": "^4.1.0-rc.0",
