@@ -36,99 +36,12 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{{ url('user') }}"
+                        <a href="{{ url('dashboard/user') }}"
                             class="flex items-center p-2 text-base text-gray-900 rounded-lg hover:bg-gray-100 group dark:text-gray-200 dark:hover:bg-gray-700 @if (request()->segment(1) == 'user') {{ 'bg-gray-100 dark:bg-gray-700' }} @endif">
                             <i
                                 class="fa-solid fa-user w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white"></i>
                             <span class="ml-3" sidebar-toggle-item>Pegawai</span>
                         </a>
-                    </li>
-                    <li>
-                        <button type="button"
-                            class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 @if (request()->segment(1) == 'custommer') {{ 'bg-gray-100 dark:bg-gray-700' }} @endif"
-                            aria-controls="dropdown-layouts" data-collapse-toggle="dropdown-layouts">
-                            <i
-                                class="fa-solid fa-user w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white"></i>
-                            <span class="flex-1 ml-3 text-left whitespace-nowrap" sidebar-toggle-item>Custommers</span>
-                            <svg sidebar-toggle-item class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd"
-                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                        </button>
-                        <ul id="dropdown-layouts"
-                            class="{{ request()->segment(1) == 'custommer' ? 'block' : 'hidden' }} py-2 space-y-2">
-                            <li>
-                                <a href="{{ url('custommer') }}"
-                                    class="flex items-center p-2 text-base text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 @if (request()->segment(2) != 'kode_gl' &&
-                                            request()->segment(2) != 'jenis_custommer' &&
-                                            request()->segment(1) == 'custommer' &&
-                                            request()->segment(2) != 'details_custommer') {{ 'bg-gray-100 dark:bg-gray-700' }} @endif">List
-                                    Customer</a>
-                            </li>
-                            <li>
-                                <a href="{{ url('custommer/kode_gl') }}"
-                                    class="flex items-center p-2 text-base text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 @if (request()->segment(2) == 'kode_gl') {{ 'bg-gray-100 dark:bg-gray-700' }} @endif">List
-                                    Kode GL</a>
-                            </li>
-                            <li>
-                                <a href=" {{ url('custommer/jenis_custommer') }}"
-                                    class="flex items-center p-2 text-base text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 @if (request()->segment(2) == 'jenis_custommer') {{ 'bg-gray-100 dark:bg-gray-700' }} @endif">List
-                                    Jenis Customer</a>
-                            </li>
-                            <li>
-                                <a href="{{ url('custommer/details_custommer') }}"
-                                    class="flex items-center p-2 text-base text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 @if (request()->segment(2) == 'details_custommer') {{ 'bg-gray-100 dark:bg-gray-700' }} @endif">Details
-                                    Custommers</a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <button type="button"
-                            class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 @if (request()->segment(1) == 'orders') {{ 'bg-gray-100 dark:bg-gray-700' }} @endif"
-                            aria-controls="dropdown-orders" data-collapse-toggle="dropdown-orders">
-                            <i
-                                class="fa-solid fa-user w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white"></i>
-                            <span class="flex-1 ml-3 text-left whitespace-nowrap" sidebar-toggle-item>Orders</span>
-                            <svg sidebar-toggle-item class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd"
-                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                        </button>
-                        <ul id="dropdown-orders"
-                            class="{{ request()->segment(1) == 'orders' ? 'block' : 'hidden' }} py-2 space-y-2">
-                            <li>
-                                <a href="{{ url('orders') }}"
-                                    class="flex items-center p-2 text-base text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 @if (request()->segment(1) == 'orders') {{ 'bg-gray-100 dark:bg-gray-700' }} @endif">List
-                                    Order</a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <button type="button"
-                            class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 @if (request()->segment(1) == 'filling') {{ 'bg-gray-100 dark:bg-gray-700' }} @endif"
-                            aria-controls="dropdown-filling" data-collapse-toggle="dropdown-filling">
-                            <i
-                                class="fa-solid fa-cart-shopping w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white"></i>
-                            <span class="flex-1 ml-3 text-left whitespace-nowrap" sidebar-toggle-item>Filling</span>
-                            <svg sidebar-toggle-item class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd"
-                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                        </button>
-                        <ul id="dropdown-filling"
-                            class="{{ request()->segment(1) == 'filling' ? 'block' : 'hidden' }} py-2 space-y-2">
-                            <li>
-                                <a href="{{ url('filling') }}"
-                                    class="flex items-center p-2 text-base text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 @if (request()->segment(1) == 'filling') {{ 'bg-gray-100 dark:bg-gray-700' }} @endif">List
-                                    Filling</a>
-                            </li>
-                        </ul>
                     </li>
                     <li>
                         <button type="button"
