@@ -39,7 +39,15 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('APP_URL').'/storage',
+            'url' => env('APP_URL') . '/storage',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+        
+        'video_materi' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/image/uploads/video/materi'),
+            'url' => env('APP_URL') . '/storage/image/uploads/video/materi',
             'visibility' => 'public',
             'throw' => false,
         ],
