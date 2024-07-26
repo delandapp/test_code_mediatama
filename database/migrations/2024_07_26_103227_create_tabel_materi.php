@@ -12,6 +12,7 @@ class CreateVideoMaterialsAndRequestsTable extends Migration
             $table->id();
             $table->string('title');
             $table->string('video_url');
+            $table->string('thumbnail_url');
             $table->softDeletes();
             $table->timestamps();
         });
