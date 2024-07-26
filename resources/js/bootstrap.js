@@ -13,6 +13,7 @@ const csrfToken = document.head.querySelector(
 window.axios.defaults.headers.common["X-CSRF-TOKEN"] = csrfToken;
 window.axios.defaults.headers.common["Accept"] = "application/json";
 window.axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
+import 'datatables.net-dt/js/dataTables.tailwindcss.js';
 
 window.DataTable = DataTable;
 window.Swal = Swal;
