@@ -1,4 +1,4 @@
-@extends('menu.request-video.layouts.master');
+@extends('menu.request-video.layouts.master')
 @push('css')
     <style>
         .drop-area.active {
@@ -33,6 +33,22 @@
             color: #a855f7
         }
 
+        .pending,
+        .approve {
+            padding: 10px 10px;
+            text-transform: uppercase;
+            color: #fff;
+            color: #fff;
+        }
+
+        .pending {
+            background-color: #180161;
+        }
+
+        .approve {
+            background-color: #FF8225;
+        }
+
         #tab-content>div {
             transition: margin-left 0.5s ease-in-out;
         }
@@ -59,11 +75,11 @@
             <div class="overflow-hidden">
                 <div class="flex transition-transform duration-500 ease-in-out" id="tab-content">
                     <div class="flex w-full p-4 rounded-lg bg-gray-50 dark:bg-gray-800 flex-grow" id="styled-outstanding">
-                        @include('menu.request-video.components.approve')
+                        @include('menu.request-video.components.pending')
                     </div>
                     @canany(['approve-video', 'cancel-video'])
                         <div class="flex w-full p-4 rounded-lg bg-gray-50 dark:bg-gray-800 flex-grow" id="styled-proses">
-                            @include('menu.request-video.components.pending')
+                            @include('menu.request-video.components.approve')
                         </div>
                     @endcanany
                 </div>
@@ -94,48 +110,90 @@
     </div>
 @endsection
 
-@section('scripts')
+@push('scripts')
     <script type="module">
         $(document).ready(function() {
-            let table = new DataTable('#videoTable', {
-                "destroy": true,
-                "processing": true,
-                "serverSide": true,
-                "ordering": true,
-                "ajax": {
-                    "url": "{{ url('video/get_video') }}",
-                    "type": 'GET',
-                    "data": {},
-                    "dataSrc": function(json) {
-                        return json.data;
-                    }
-                },
-                "columnDefs": [{
-                        targets: [0],
-                        searchable: false,
-                        orderable: false,
-                        className: 'dark:text-gray-300',
-                        render: function(data, type, row, meta) {
-                            return meta.row + meta.settings._iDisplayStart + 1;
+            const canActionOrder = @json(auth()->user()->canAny(['edit-order', 'hapus-order']));
+            const canApproveOrder = @json(auth()->user()->canAny(['approve-order', ' cancel-order']));
+            var satuan_waktu = null;
+            let tabel_approve;
+            let tabel_pending = initializeTable('#tabel_pending',
+                "{{ url('request/get_requestvideo?status=pending') }}");;
+
+            $('#outstanding-styled-tab').on('click', function() {
+                $('#styled-outstanding').css('margin-left', '0');
+                $('#styled-proses').css('margin-left', '100%');
+                $(this).addClass('active-tab');
+                $(this).removeClass('hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300');
+                $('#proses-styled-tab').removeClass('active-tab');
+                $('#proses-styled-tab').addClass(
+                    'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300');
+            });
+
+            $('#proses-styled-tab').on('click', function() {
+                $('#styled-outstanding').css('margin-left', '-100%');
+                $('#styled-proses').css('margin-left', '0');
+                $(this).addClass('active-tab');
+                $(this).removeClass('hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300');
+                $('#outstanding-styled-tab').removeClass('active-tab');
+                $('#outstanding-styled-tab').addClass(
+                    'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300');
+                if (!tabel_approve) {
+                    tabel_approve = initializeTable('#tabel_approve',
+                        "{{ url('request/get_requestvideo?status=approved') }}");
+                }
+            });
+
+            function initializeTable(tableId, url) {
+                return new DataTable(tableId, {
+                    "scrollX": true,
+                    "destroy": true,
+                    "processing": true,
+                    "serverSide": true,
+                    "ordering": true,
+                    "scrollCollapse": true,
+                    "fixedColumns": {
+                        start: 2
+                    },
+                    "ajax": {
+                        "url": url,
+                        "type": 'GET',
+                        "data": {},
+                        "dataSrc": function(json) {
+                            return json.data;
                         }
                     },
-                    {
-                        targets: [1, 3, 4],
-                        orderable: false,
-                        className: "dark:text-gray-300"
+                    "drawCallback": function(settings) {
+                        $(this).DataTable().columns.adjust();
                     },
-                    {
-                        targets: [2],
-                        orderable: true,
-                        className: "dark:text-gray-300"
-                    },
-                    {
-                        targets: [5],
-                        orderable: false,
-                        className: "dark:text-gray-300 p-4 space-x-2 whitespace-nowrap"
-                    }
-                ]
-            });
+                    "columnDefs": [{
+                            targets: [0],
+                            searchable: false,
+                            orderable: false,
+                            className: 'dark:text-gray-300',
+                            render: function(data, type, row, meta) {
+                                return meta.row + meta.settings._iDisplayStart + 1;
+                            }
+                        },
+                        {
+                            targets: [0, 1, 2, 3, 6, 7, 8, 9],
+                            orderable: false,
+                            className: "dark:text-gray-300"
+                        },
+                        {
+                            targets: [4, 5],
+                            orderable: true,
+                            className: "dark:text-gray-300"
+                        },
+                        {
+                            targets: canActionOrder && canApproveOrder ? [9, 10] : [9],
+                            orderable: false,
+                            className: "p-4 space-x-2 whitespace-nowrap dark:text-gray-300"
+                        }
+                    ]
+                });
+            }
+
 
             const debounce = (func, delay) => {
                 let timeoutId;
@@ -275,7 +333,77 @@
                         })
                     }
                 });
-            })
+            });
+
+            $(document).on('click', '#approveModalBtn', function(event) {
+                event.preventDefault();
+                $('#modalApproveLabel').text('Approve Orders');
+                $('#approveBtn').attr('href', '/request/approve/' + $(this).attr('href').split('/').pop());
+                $('#approveModal').toggleClass('hidden').toggleClass('flex');
+                $('#time_expired').removeClass('hidden').addClass('block');
+                $('#modalApproveBody').text(
+                    'Anda yakin ingin mengkonfirmasi request ini?Request ini akan diproses. Pastikan Anda telah memeriksa detail request dengan benar.Konfirmasi request akan mengirimkan notifikasi ke User.'
+                );
+            });
+
+            $(document).on('click', '#cancelModalBtn', function(event) {
+                event.preventDefault();
+                $('#modalApproveLabel').text('Cancel Orders');
+                $('#approveBtn').attr('href', '/request/cancel/' + $(this).attr('href').split('/').pop());
+                $('#approveModal').toggleClass('hidden').toggleClass('flex');
+                $('#time_expired').addClass('hidden').removeClass('block');
+                $('#modalApproveBody').text(
+                    ' Anda yakin ingin membatalkan pesanan ini?Pesanan ini akan dibatalkan. Pastikan Anda telah memeriksa detail pesanan dengan benar.Pembatalan pesanan akan mengirimkan notifikasi ke LO dan menghentikan proses pengiriman.'
+                );
+            });
+
+            $(document).on('click', '#closeAprroveModalBtn, #declineBtn', function(event) {
+                event.preventDefault();
+                $('#approveModal').toggleClass('hidden').toggleClass('flex');
+                $('#time_expired').remove('hidden').removeClass('block');
+                $(`input[id="waktu"]`).remove(
+                    'border-red-500')
+                $('.error-message-time').text('')
+            });
+
+            $(document).on('click', '#approveBtn', function(event) {
+                event.preventDefault();
+                let waktu = $('#waktu').val();
+                let cekApprove = $('#time_expired').hasClass('block')
+                let url = $(this).attr('href');
+                if (waktu == '' && cekApprove) {
+                    $(`input[id="waktu"]`).addClass(
+                        'border-red-500')
+                    $('.error-message-time').text('Masukan inputan waktu anda')
+                    return
+                }
+                if (cekApprove) {
+                    url = `${url}?waktu=${waktu}`
+                }
+                console.log(url);
+                $('#ModalButtonTextApprove , #approve-loading-button').toggleClass('hidden');
+                axios.get(url)
+                    .then(response => {
+                        Toast.fire({
+                            icon: 'success',
+                            title: response.data.message
+                        })
+                        $('#approveModal').toggleClass('hidden').toggleClass('flex');
+                    })
+                    .catch(error => {
+                        Toast.fire({
+                            icon: 'error',
+                            title: error.response.data.message
+                        })
+                    })
+                    .finally(() => {
+                        $('#ModalButtonTextApprove , #approve-loading-button').toggleClass('hidden');
+                        $('#time_expired').remove('hidden').remove('block');
+                        $(`input[id="waktu"]`).remove(
+                            'border-red-500')
+                        $('.error-message-time').text('')
+                    })
+            });
 
             async function editVideo(videoId) {
                 try {
@@ -342,239 +470,62 @@
                 timerProgressBar: true,
             });
 
-            window.Echo.channel('laravel_database_materi-channel')
-                .listen('.materi-create-event', (e) => {
+            window.Echo.channel('laravel_database_requestvideo-channel')
+                .listen('.requestvideo-create-event', (e) => {
                     const newData = e.message;
-                    table.row.add(newData, 0).draw(false);
+                    tabel_pending.row.add(newData, 0).draw(false);
                 })
-                .listen('.materi-edit-event', (e) => {
+                .listen('.requestvideo-edit-event', (e) => {
                     const editData = e.message;
-                    const rowIndex = table
-                        .rows()
-                        .data()
-                        .toArray()
-                        .findIndex(row => row[1] === editData[1]);
-
-                    console.log(rowIndex);
+                    const rowIndex = tabel_pending.rows().data().toArray().findIndex(row => {
+                        return row[1].includes(editData[1]);
+                    });
 
                     if (rowIndex !== -1) {
-                        table.row(rowIndex).data(editData).draw(
-                            false);
-                    } else {
-                        console.error("Row not found!");
+                        tabel_pending.row(rowIndex).data(editData).draw(false);
                     }
                 })
-                .listen('.materi-delete-event', (e) => {
+                .listen('.requestvideo-delete-event', (e) => {
                     const deleteData = e.message;
-                    const rowIndex = table
-                        .rows()
-                        .data()
-                        .toArray()
-                        .findIndex(row => row[1] === deleteData[1]);
-
-                    console.log(rowIndex);
+                    const rowIndex = tabel_pending.rows().data().toArray().findIndex(row => {
+                        return row[1].includes(deleteData[1]);
+                    });
 
                     if (rowIndex !== -1) {
-                        table.row(rowIndex).remove().draw(false);
-                    } else {
-                        console.error("Row not found!");
+                        tabel_pending.row(rowIndex).remove().draw(false);
                     }
-                });
+                })
+                .listen('.requestvideo-approve-event', (e) => {
+                    const approveData = e.message;
+                    if (tabel_pending && tabel_pending
+                        .rows) {
+                        const rowIndex = tabel_pending.rows().data().toArray().findIndex(row => {
+                            return row && row[1] && row[1].includes(approveData[1]);
+                        });
 
-            const $dropAreaVideo = $(".drop-area-video");
-            const $fileInputVideo = $("#video");
-            const $imageLabelVideo = $("#video-label");
-            const $previewContainerVideo = $(".preview-video-container");
-            const $previewVideo = $(".preview-video");
-            const $closeButtonVideo = $(".close-button-video");
-            const $fileNameVideo = $(".file-name-video");
-            const allowedTypesVideo = ["video/mp4", "video/webm", "video/ogg"];
-            const maxSizeVideo = 20 * 1024 * 1024; // 20 MB
+                        if (rowIndex !== -1) {
+                            tabel_pending.row(rowIndex).remove().draw(false);
 
-            $dropAreaVideo.on("dragover", (event) => {
-                event.preventDefault();
-                $dropAreaVideo.addClass("active");
-            });
+                            if (tabel_approve && tabel_approve
+                                .rows) {
+                                tabel_approve.row.add(approveData, 0).draw(true);
+                            }
+                        }
+                    }
+                })
+                .listen('.requestvideo-cancel-event', (e) => {
+                    const cancelData = e.message;
+                    if (tabel_approve && tabel_approve.rows) {
+                        const rowIndex = tabel_approve.rows().data().toArray().findIndex(row => {
+                            return row && row[1] && row[1].includes(cancelData[1]);
+                        });
 
-            $dropAreaVideo.on("dragleave", () => {
-                $dropAreaVideo.removeClass("active");
-            });
-
-            $dropAreaVideo.on("drop", (event) => {
-                event.preventDefault();
-                const file = event.originalEvent.dataTransfer.files[0];
-                showPreviewVideo(file);
-                showFileNameVideo(file);
-            });
-
-            $fileInputVideo.on("change", () => {
-                const file = $fileInputVideo[0].files[0];
-                showPreviewVideo(file);
-                showFileNameVideo(file);
-            });
-
-            $closeButtonVideo.on("click", (event) => {
-                event.preventDefault();
-                removePreviewVideo();
-            });
-
-            function removePreviewVideo() {
-                $fileInputVideo.val("");
-                $previewVideo.find("source").attr("src", "");
-                $previewVideo[0].load();
-                $fileNameVideo.text("");
-                $previewVideo.addClass("hidden");
-                $previewContainerVideo.addClass("hidden");
-                $previewVideo.removeClass("flex");
-                $dropAreaVideo
-                    .removeClass("border-green-500 border-red-500")
-                    .addClass("border-gray-300");
-                $imageLabelVideo.removeClass("hidden").addClass("flex");
-            }
-
-            function showPreviewVideo(file) {
-                if (!allowedTypesVideo.includes(file.type) || file.size > maxSizeVideo) {
-                    $(`input[name="video"]`)
-                        .next(".error-message")
-                        .text(
-                            "File harus berupa berformat MP4, WEBP atau OGG dan ukuran maksimal 20 MB"
-                        )
-                        .addClass("flex")
-                        .removeClass("hidden");
-                    $(".drop-area-video")
-                        .removeClass("active border-gray-300 border-green-500")
-                        .addClass("border-red-500");
-                    $fileInputVideo.val("");
-                    $previewVideo.removeClass("flex").addClass("hidden");
-                    $previewContainerVideo.addClass("hidden");
-                    $previewVideo.find("source").attr("src", "");
-                    $imageLabelVideo.addClass("flex").removeClass("hidden");
-                    return;
-                }
-
-                $(`input[name="video"]`)
-                    .next(".error-message")
-                    .text("")
-                    .addClass("hidden");
-                $(".drop-area-video")
-                    .removeClass("border-red-500")
-                    .addClass("border-green-500");
-
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => {
-                    $imageLabelVideo.addClass("hidden").removeClass("flex");
-                    const videoElement = $previewVideo[0];
-                    videoElement.src = reader.result;
-                    videoElement.load();
-                    video
-                    $previewVideo.removeClass("hidden");
-                    $dropAreaVideo.removeClass("active");
-                    $previewContainerVideo.removeClass("hidden");
-                    $previewContainerVideo.addClass("flex");
-                };
-            }
-
-            function showFileNameVideo(file) {
-                $fileNameVideo.text(file.name);
-                $fileNameVideo.show();
-            }
-
-            const $dropArea = $(".drop-area");
-            const $fileInput = $("#image");
-            const $imageLabel = $("#image-label");
-            const $previewContainer = $(".preview-container");
-            const $previewImage = $(".preview-image");
-            const $closeButton = $(".close-button");
-            const $fileName = $(".file-name");
-            const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
-            const maxSize = 10 * 1024 * 1024;
-
-            $dropArea.on("dragover", (event) => {
-                event.preventDefault();
-                $dropArea.addClass("active");
-            });
-
-            $dropArea.on("dragleave", () => {
-                $dropArea.removeClass("active");
-            });
-
-            $dropArea.on("drop", (event) => {
-                event.preventDefault();
-                const file = event.originalEvent.dataTransfer.files[0];
-                showPreview(file);
-                showFileName(file);
-            });
-
-            $fileInput.on("change", () => {
-                const file = $fileInput[0].files[0];
-                showPreview(file);
-                showFileName(file);
-            });
-
-            $closeButton.on("click", (event) => {
-                event.preventDefault();
-                removePreview();
-            });
-
-            function removePreview() {
-                $fileInput.val("");
-                $previewImage.css("background-image", "");
-                $fileName.text("");
-                $previewImage.addClass("hidden");
-                $previewContainer.addClass("hidden");
-                $previewImage.removeClass("flex");
-                $dropArea
-                    .removeClass("border-green-500 border-red-500")
-                    .addClass("border-gray-300");
-                $imageLabel.removeClass("hidden").addClass("flex");
-            }
-
-            function showPreview(file) {
-                if (!allowedTypes.includes(file.type) || file.size > maxSize) {
-                    $(`input[name="thumbnail"]`)
-                        .next(".error-message")
-                        .text(
-                            "File harus berupa berformat JPEG, PNG, atau GIF dan ukuran maksimal 10 MB"
-                        )
-                        .addClass("flex")
-                        .removeClass("hidden");
-                    $(".drop-area")
-                        .removeClass("active border-gray-300 border-green-500")
-                        .addClass("border-red-500");
-                    $fileInput.val("");
-                    $previewImage.removeClass("flex").addClass("hidden");
-                    $previewContainer.addClass("hidden");
-                    $previewImage.css("background-image", "");
-                    $imageLabel.addClass("flex").removeClass("hidden");
-                    return;
-                }
-
-                if (file.type.startsWith("image/")) {
-                    $(`input[name="thumbnail"]`)
-                        .next(".error-message")
-                        .text("")
-                        .addClass("hidden");
-                    $(".drop-area")
-                        .removeClass("border-red-500")
-                        .addClass("border-green-500");
-                    const reader = new FileReader();
-                    reader.readAsDataURL(file);
-                    reader.onload = () => {
-                        $imageLabel.addClass("hidden").removeClass("flex");
-                        $previewImage.css("background-image", `url(${reader.result})`);
-                        $previewImage.removeClass("hidden");
-                        $dropArea.removeClass("active");
-                        $previewContainer.removeClass("hidden");
-                        $previewContainer.addClass("flex");
-                    };
-                }
-            }
-
-            function showFileName(file) {
-                $fileName.text(file.name);
-                $fileName.show();
-            }
+                        if (rowIndex !== -1) {
+                            tabel_approve.row(rowIndex).remove().draw(false);
+                        }
+                    }
+                    tabel_pending.row.add(cancelData, 0).draw(true);
+                })
         });
     </script>
-@endsection
+@endpush

@@ -29,6 +29,7 @@ return new class extends Migration
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->timestamp('approved_at')->nullable();
             $table->string('expires_at')->nullable();
+            $table->softDeletes();
             $table->timestamps();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('video_material_id')->references('id')->on('video_materials')->onDelete('cascade');

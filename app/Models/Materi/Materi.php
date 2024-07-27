@@ -2,6 +2,7 @@
 
 namespace App\Models\Materi;
 
+use App\Models\User;
 use App\Observers\MateriObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,4 +16,9 @@ class Materi extends Model
     protected $table = 'video_materials';
     protected $guarded = ['id'];
     public $timestamps = true;
+
+    public function custommers()
+    {
+        return $this->belongsToMany(User::class, 'video_requests', 'video_material_id', 'user_id');
+    }
 }

@@ -7,6 +7,7 @@ import DataTable from "datatables.net-dt";
 import Echo from "laravel-echo";
 import socketio from "socket.io-client";
 import Swal from "sweetalert2";
+import "datatables.net-dt/js/dataTables.fixedColumns.js";
 import "@fortawesome/fontawesome-free/js/all.js";
 const csrfToken = document.head.querySelector(
     'meta[name="csrf-token"]'

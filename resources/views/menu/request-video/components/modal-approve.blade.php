@@ -23,16 +23,24 @@
             </div>
             <!-- Modal body -->
             <div class="p-4 md:p-5 space-y-4">
+                <div class="col-span-6 sm:col-span-3" id="time_expired">
+                    <label for="volume" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                        Masukan Lama Waktu</label>
+                    <div class="flex">
+                        <input type="number" id="waktu" name="waktu"
+                            class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-l-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                            placeholder="Masukan lama expired" required>
+                        <select name="satuan_volume" id="satuan_volume"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-r-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            required disabled>
+                            <option selected value="Menit">Menit</option>
+                        </select>
+                    </div>
+                    <div class="error-message-time text-red-500 text-[14px] ml-2"></div>
+                </div>
                 <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400" id="modalApproveBody">
-                    Anda yakin ingin mengkonfirmasi pesanan ini?
-
-                    Pesanan ini akan diproses. Pastikan Anda telah memeriksa detail pesanan dengan benar.
-
-                    Konfirmasi pesanan akan mengirimkan notifikasi ke LO dan memulai proses pengiriman.
-
                 </p>
                 <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
-                    Apakah Anda yakin ?
                 </p>
             </div>
             <!-- Modal footer -->
