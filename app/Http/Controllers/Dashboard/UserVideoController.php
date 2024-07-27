@@ -153,7 +153,7 @@ class UserVideoController extends Controller
         }
         $materi->status = 'done';
         $materi->save();
-
+        event(new VideoNotifikasiEvent(auth()->user()->name . ' Telah Selesai Melihat Video'));
         return response()->json(['message' => 'Cache cleared successfully']);
     }
 }
