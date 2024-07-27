@@ -12,7 +12,7 @@ return new class extends Migration
         Schema::create('video_materials', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('id_user');
-            $table->string('kode_materi');
+            $table->string('kode_materi')->unique();
             $table->string('title');
             $table->string('video');
             $table->string('thumbnail')->nullable();
@@ -25,6 +25,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('video_material_id');
+            $table->string('kode_request')->unique();
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->timestamp('approved_at')->nullable();
             $table->string('expires_at')->nullable();

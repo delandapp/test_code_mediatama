@@ -1,21 +1,72 @@
-@extends('menu.request-video.layouts.master')
+@push('css')
+    <style>
+        .drop-area.active {
+            border-color: #2563eb;
+        }
 
+        div.dt-container {
+            width: 100% !important;
+        }
+
+        th,
+        td {
+            white-space: nowrap;
+        }
+
+        th.custom,
+        td.custom {
+            white-space: normal !important;
+        }
+
+        div.dataTables_wrapper {
+            margin: 0 auto;
+        }
+
+        .active-tab {
+            border-bottom-color: #9333ea;
+            color: #9333ea;
+        }
+
+        .dark .active-tab {
+            border-bottom-color: #a855f7;
+            color: #a855f7
+        }
+
+        #tab-content>div {
+            transition: margin-left 0.5s ease-in-out;
+        }
+    </style>
+@endpush
 @section('content')
     <div class="p-5">
-        <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+        <div class="relative shadow-md sm:rounded-lg">
             @include('menu.request-video.components.header-table')
-            <table id="videoTable" class="display table-auto w-full" style="width:100%">
-                <thead>
-                    <tr>
-                        <th>No</th>
-                        <th>Kode Materi</th>
-                        <th>Title</th>
-                        <th>Video</th>
-                        <th>Thumbnail</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-            </table>
+            <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
+                <ul class="flex flex-wrap -mb-px text-sm font-medium text-center w-full" id="default-styled-tab">
+                    <li class="flex-shrink-1 flex-grow">
+                        <button class="inline-block w-full p-4 border-b-2 rounded-t-lg active-tab" id="outstanding-styled-tab"
+                            type="button">Request User</button>
+                    </li>
+                    @canany(['approve-video', 'cancel-video'])
+                        <li class="flex-shrink-1 flex-grow">
+                            <button class="inline-block p-4 w-full border-b-2 rounded-t-lg" id="proses-styled-tab"
+                                type="button">Approve Request User</button>
+                        </li>
+                    @endcanany
+                </ul>
+            </div>
+            <div class="overflow-hidden">
+                <div class="flex transition-transform duration-500 ease-in-out" id="tab-content">
+                    <div class="flex w-full p-4 rounded-lg bg-gray-50 dark:bg-gray-800 flex-grow" id="styled-outstanding">
+                        @include('menu.request-video.submenu.approve')
+                    </div>
+                    @canany(['approve-video', 'cancel-video'])
+                        <div class="flex w-full p-4 rounded-lg bg-gray-50 dark:bg-gray-800 flex-grow" id="styled-proses">
+                            @include('menu.request-video.submenu.pending')
+                        </div>
+                    @endcanany
+                </div>
+            </div>
         </div>
         <div id="loadingModal" tabindex="1" data-modal-backdrop="static"
             class="fixed top-0 left-0 right-0 z-50 items-center justify-center hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
@@ -38,8 +89,10 @@
             </div>
         </div>
         @include('menu.request-video.components.modal')
+        @include('menu.request-video.components.modal-approve')
     </div>
 @endsection
+
 @section('scripts')
     <script type="module">
         $(document).ready(function() {
