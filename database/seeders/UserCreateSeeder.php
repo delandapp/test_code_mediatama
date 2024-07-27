@@ -31,5 +31,7 @@ class UserCreateSeeder extends Seeder
             'email' => 'finance@gmail.com',
             'password' => bcrypt($password),
         ]);
+
+        $superadmin->assignRole('superadmin');
     }
 }

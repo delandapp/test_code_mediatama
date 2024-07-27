@@ -66,6 +66,7 @@ class UserController extends Controller
                 'password' => bcrypt($data['password'] ?? 'Password124@'),
             ]);
 
+            $user->assignRole('custommer');
 
             event(new UserCreateEvent($user));
 

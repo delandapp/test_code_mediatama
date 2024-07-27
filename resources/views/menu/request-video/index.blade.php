@@ -1,3 +1,4 @@
+@extends('menu.request-video.layouts.master');
 @push('css')
     <style>
         .drop-area.active {
@@ -58,11 +59,11 @@
             <div class="overflow-hidden">
                 <div class="flex transition-transform duration-500 ease-in-out" id="tab-content">
                     <div class="flex w-full p-4 rounded-lg bg-gray-50 dark:bg-gray-800 flex-grow" id="styled-outstanding">
-                        @include('menu.request-video.submenu.approve')
+                        @include('menu.request-video.components.approve')
                     </div>
                     @canany(['approve-video', 'cancel-video'])
                         <div class="flex w-full p-4 rounded-lg bg-gray-50 dark:bg-gray-800 flex-grow" id="styled-proses">
-                            @include('menu.request-video.submenu.pending')
+                            @include('menu.request-video.components.pending')
                         </div>
                     @endcanany
                 </div>
