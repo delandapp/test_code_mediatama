@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 use App\Models\Materi\Materi;
+use App\Models\RequestVideo\RequestVideo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -48,7 +49,13 @@ class User extends Authenticatable
         ];
     }
 
-    public function materis() {
+    public function materis()
+    {
         return $this->belongsToMany(Materi::class, 'video_requests', 'user_id', 'video_material_id');
+    }
+
+    public function videoRequests()
+    {
+        return $this->hasMany(RequestVideo::class);
     }
 }

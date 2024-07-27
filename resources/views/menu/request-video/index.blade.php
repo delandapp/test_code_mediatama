@@ -265,7 +265,6 @@
                 }).catch(error => {
                     const errors = error.response.data.errors;
                     for (const field in errors) {
-                        console.log(field);
                         if (field == 'video' || field == 'thumbnail') {
                             $(`input[name=${field}]`)
                                 .next(".error-message")
@@ -361,8 +360,8 @@
                 event.preventDefault();
                 $('#approveModal').toggleClass('hidden').toggleClass('flex');
                 $('#time_expired').remove('hidden').removeClass('block');
-                $(`input[id="waktu"]`).remove(
-                    'border-red-500')
+                $("input").removeClass(
+                            'border-red-500').val('')
                 $('.error-message-time').text('')
             });
 
@@ -399,50 +398,11 @@
                     .finally(() => {
                         $('#ModalButtonTextApprove , #approve-loading-button').toggleClass('hidden');
                         $('#time_expired').remove('hidden').remove('block');
-                        $(`input[id="waktu"]`).remove(
-                            'border-red-500')
+                        $("input").removeClass(
+                            'border-red-500').val('')
                         $('.error-message-time').text('')
                     })
             });
-
-            async function editVideo(videoId) {
-                try {
-                    const response = await axios.get('/video/' + videoId);
-                    videoData = response.data.data;
-                    var videoData = response.data.data;
-                    let urlImage = "{{ Storage::disk('materi')->url('') }}" + videoData
-                        .thumbnail;
-                    let urlVideo = "{{ Storage::disk('materi')->url('') }}" + videoData
-                        .video;
-                    $('#title').val(videoData.title);
-                    $imageLabel.addClass('hidden').removeClass('flex');
-                    $(`input[name="thumbnail"]`).next('.error-message').text('').addClass('hidden');
-                    $('.drop-area').removeClass('border-red-500').addClass('border-green-500');
-                    $previewImage.css('background-image',
-                        `url("${urlImage}")`
-                    );
-                    $previewImage.removeClass('hidden').addClass('flex');
-                    $dropArea.removeClass('active border-green-500').removeClass('border-red-500').addClass(
-                        'border-green-500');
-                    $previewContainer.removeClass('hidden');
-                    $previewContainer.addClass('flex');
-                    $imageLabelVideo.addClass('hidden').removeClass('flex');
-                    $(`input[name="thumbnail"]`).next('.error-message').text('').addClass('hidden');
-                    $previewVideo.attr('src',
-                        urlVideo
-                    );
-                    $previewVideo.removeClass('hidden').addClass('flex');
-                    $dropAreaVideo.removeClass('active').removeClass('border-red-500').addClass(
-                        'border-green-500');
-                    $previewContainerVideo.removeClass('hidden');
-                    $previewContainerVideo.addClass('flex');
-                } catch (error) {
-                    console.error(error);
-                } finally {
-                    $('#Modal').toggleClass('hidden').toggleClass('flex');
-                    $('#loadingModal').toggleClass('hidden').toggleClass('flex');
-                }
-            }
 
             $(document).on('click', '#tambahModalBtn', function(event) {
                 event.preventDefault();

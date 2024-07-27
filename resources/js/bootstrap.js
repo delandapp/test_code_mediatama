@@ -28,3 +28,34 @@ window.axios.defaults.headers.common["X-CSRF-TOKEN"] = csrfToken;
 window.axios.defaults.headers.common["Accept"] = "application/json";
 window.axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
 select2();
+const ToastNotifikasi = Swal.mixin({
+    toast: true,
+    position: "top-end",
+    iconColor: "white",
+    customClass: {
+        popup: "colored-toast",
+    },
+    showConfirmButton: false,
+    timer: 3500,
+    timerProgressBar: true,
+});
+window.Echo.channel("laravel_database_approve-channel").listen(
+    ".notifikasi-user-event",
+    (e) => {
+        const notifData = e.message;
+
+        axios
+            .get("check-permission/approve-video")
+            .then((response) => {
+                if (response.data.allowed) {
+                    ToastNotifikasi.fire({
+                        icon: "success",
+                        title: notifData,
+                    });
+                }
+            })
+            .catch((error) => {
+                console.error("Terjadi kesalahan saat memeriksa izin:", error);
+            });
+    }
+);

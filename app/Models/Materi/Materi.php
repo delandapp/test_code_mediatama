@@ -2,6 +2,7 @@
 
 namespace App\Models\Materi;
 
+use App\Models\RequestVideo\RequestVideo;
 use App\Models\User;
 use App\Observers\MateriObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -20,5 +21,10 @@ class Materi extends Model
     public function custommers()
     {
         return $this->belongsToMany(User::class, 'video_requests', 'video_material_id', 'user_id');
+    }
+
+    public function videoRequests()
+    {
+        return $this->hasMany(RequestVideo::class, 'video_material_id', 'id');
     }
 }

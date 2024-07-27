@@ -33,5 +33,6 @@ class UserCreateSeeder extends Seeder
         ]);
 
         $superadmin->assignRole('superadmin');
+        $marketing->assignRole('customer');
     }
 }

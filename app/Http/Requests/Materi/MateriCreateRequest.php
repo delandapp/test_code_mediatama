@@ -22,6 +22,7 @@ class MateriCreateRequest extends FormRequest
             'id_user' => 'nullable',
             'kode_materi' => 'nullable',
             'title' => 'required',
+            'description' => 'nullable',
             'video' => 'required|mimes:mp4',
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10000'
         ];

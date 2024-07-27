@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Events\RequestVideo\RequestVideoApproveEvent;
 use App\Events\RequestVideo\RequestVideoCancelEvent;
+use App\Events\VideoUser\VideoApproveEvent;
+use App\Events\VideoUser\VideoCancelEvent;
 use App\Helpers\EncryptionHelper;
 use App\Http\Controllers\Controller;
 use App\Models\RequestVideo\RequestVideo;
@@ -52,8 +54,9 @@ class RequestVideoController extends Controller
             if ($requestVideo->status == 'pending') {
                 $requestVideo->status = 'approved';
                 $requestVideo->expires_at = $request['waktu'];
-                $requestVideo->approved_at = Carbon::now();
+                $requestVideo->approved_at = Carbon::now()->locale('id');
                 $requestVideo->save();
+                event(new VideoApproveEvent($requestVideo));
                 event(new RequestVideoApproveEvent($this->formatRequestVideoDataForDatatable($requestVideo)));
                 return response()->json(['status' => true, 'message' => 'RequestVideo approved successfully'], 200);
             }
@@ -77,6 +80,7 @@ class RequestVideoController extends Controller
                 $requestVideo->approved_at = null;
                 $requestVideo->save();
                 event(new RequestVideoCancelEvent($this->formatRequestVideoDataForDatatable($requestVideo)));
+                event(new VideoCancelEvent($requestVideo));
                 return response()->json(['status' => true, 'message' => 'RequestVideo cancel successfully'], 200);
             }
         } catch (Throwable $e) {
@@ -84,7 +88,7 @@ class RequestVideoController extends Controller
         }
     }
 
-    private function formatRequestVideoDataForDatatable($requestvideo)
+    public static function formatRequestVideoDataForDatatable($requestvideo)
     {
         $data = [];
         $data[] = null;

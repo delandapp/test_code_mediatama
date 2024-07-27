@@ -221,7 +221,7 @@
                         })
                     }
                 });
-            })
+            });
 
             async function editVideo(videoId) {
                 try {
