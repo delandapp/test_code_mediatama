@@ -25,6 +25,7 @@ class RoleSeeder extends Seeder
         Permission::create(['name' => 'lihat-video']);
         Permission::create(['name' => 'approve-video']);
         Permission::create(['name' => 'cancel-video']);
+        Permission::create(['name' => 'request-video']);
 
         Permission::create(['name' => 'tambah-materi']);
         Permission::create(['name' => 'edit-materi']);
@@ -36,42 +37,22 @@ class RoleSeeder extends Seeder
 
         $roleAdmin = Role::findByName('superadmin');
 
-        //? (?) Memasukan Permission ke Role admin
         $roleAdmin->givePermissionTo([
             'tambah-customer',
             'edit-customer',
             'hapus-customer',
             'lihat-customer',
-            'tambah-user',
-            'edit-user',
-            'hapus-user',
-            'lihat-user',
-            'tambah-order',
-            'edit-order',
-            'hapus-order',
-            'lihat-order',
-            'approve-order',
-            'cancel-order',
+            'tambah-video',
+            'edit-video',
+            'hapus-video',
+            'lihat-video',
+            'approve-video',
+            'cancel-video',
         ]);
 
-        $roleMarketing = Role::findByName('marketing');
-        $roleMarketing->givePermissionTo([
-            'tambah-order',
-            'edit-order',
-            'hapus-order',
-            'lihat-order',
-            'tambah-customer',
-            'edit-customer',
-            'hapus-customer',
-            'lihat-customer',
+        $roleCustommer = Role::findByName('customer');
+        $roleCustommer->givePermissionTo([
+            'request-video',
         ]);
-
-        $roleFinance = Role::findByName('finance');
-        $roleFinance->givePermissionTo([
-            'lihat-order',
-            'approve-order',
-            'cancel-order',
-        ]);
-
     }
 }
