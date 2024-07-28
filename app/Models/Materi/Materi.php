@@ -2,8 +2,11 @@
 
 namespace App\Models\Materi;
 
+use App\Models\Dislike\Dislike;
 use App\Models\Komentar\Komentar;
+use App\Models\Like\Like;
 use App\Models\RequestVideo\RequestVideo;
+use App\Models\Simpan\Simpan;
 use App\Models\User;
 use App\Observers\MateriObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -32,5 +35,17 @@ class Materi extends Model
     public function komentars()
     {
         return $this->hasMany(Komentar::class, 'materi_id', 'id');
+    }
+    public function likes()
+    {
+        return $this->hasMany(Like::class, 'materi_id', 'id');
+    }
+    public function dislikes()
+    {
+        return $this->hasMany(Dislike::class, 'materi_id', 'id');
+    }
+    public function simpans()
+    {
+        return $this->hasMany(Simpan::class, 'materi_id', 'id');
     }
 }

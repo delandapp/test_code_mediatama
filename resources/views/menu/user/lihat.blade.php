@@ -255,7 +255,7 @@
 
             function buatTombolDelete(komentarId) {
                 return `
-<button class="inline-flex items-center justify-center w-20 px-4 py-2 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-800 focus:ring-4 focus:ring-red-300 dark:focus:ring-red-900" href="/komentar/delete/${komentarId}" id="btnKomentarDelete">
+<button class="z-50 inline-flex items-center justify-center w-20 px-4 py-2 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-800 focus:ring-4 focus:ring-red-300 dark:focus:ring-red-900" href="/komentar/delete/${komentarId}" id="btnKomentarDelete">
 <i class="fa-solid fa-trash text-white"></i>
 </button>`
             }
@@ -303,6 +303,7 @@
 
             $(document).on('click', '#btnKomentarDelete', function(event) {
                 event.preventDefault();
+                event.stopPropagation();
                 var komentarId = $(this).attr('href').split('/').pop();
                 Swal.fire({
                     title: "Apakah Kamu yakin?",
@@ -355,13 +356,13 @@
                 if (icon.data('prefix') === 'fas') {
                     icon.attr('data-prefix', 'far');
                     button.removeClass('text-red-600');
-                    button.find('.like-count').text(dislikeCount > 0 ? dislikeCount - 1 :
+                    button.find('.dislike-count').text(dislikeCount > 0 ? dislikeCount - 1 :
                         0);
                     $('.like-button').removeClass('disabled').css('pointer-events', 'auto');
                 } else {
                     icon.attr('data-prefix', 'fas');;
                     button.addClass('text-red-600');
-                    button.find('.like-count').text(dislikeCount + 1);
+                    button.find('.dislike-count').text(dislikeCount + 1);
                     $('.like-button').addClass('disabled').css('pointer-events', 'none');
                 }
                 button.toggleClass('disliked');
@@ -444,9 +445,10 @@
                         'materi_id': videoId,
                         'user_id': userId
                     }).then(function(response) {
+                        const status = response.data.data.status;
                         Toast.fire({
-                            icon: 'success',
-                            title: response.data.message
+                            icon: status ? 'success' : 'error',
+                            title: status ? 'Video Berhasil Di Like' : 'Video Tidak Dilike',
                         });
                     }).catch(function(error) {
                         Toast.fire({
@@ -465,9 +467,11 @@
                         'materi_id': videoId,
                         'user_id': userId
                     }).then(function(response) {
+                        const status = response.data.data.status;
                         Toast.fire({
-                            icon: 'success',
-                            title: response.data.message
+                            icon: status ? 'success' : 'error',
+                            title: status ? 'Video Berhasil Di Dislike' :
+                                'Video Tidak Didislike',
                         });
                     }).catch(function(error) {
                         Toast.fire({
@@ -508,6 +512,8 @@
                     const komentarElement = $(komentarElementString);
                     if (userId == newKomentar.userId) {
                         komentarElement.append(buttonDelete);
+                        komentarElement.addClass(
+                            'komentar hover:cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ')
                     }
                     $('#komentarContainer').prepend(komentarElement);
                 })

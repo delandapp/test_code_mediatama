@@ -9,6 +9,7 @@ use App\Models\Komentar\Komentar;
 use App\Models\Like\Like;
 use App\Models\Materi\Materi;
 use App\Models\RequestVideo\RequestVideo;
+use App\Models\Simpan\Simpan;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -75,5 +76,10 @@ class User extends Authenticatable
     public function likes()
     {
         return $this->hasMany(Like::class);
+    }
+
+    public function simpans()
+    {
+        return $this->hasMany(Simpan::class);
     }
 }

@@ -37,7 +37,7 @@ class UserController extends Controller
             $row[] = Carbon::parse($item->created_at)->format('d-m-Y');
             $row[] = "";
             $row[4] .= "<a href='dashboard/user/edit/" . EncryptionHelper::encrypt_custom($item->id) . "' class='inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' id='editModalBtn'>Edit</a>";
-            $row[4] .= "<a href='dashboard/user/delete/" . EncryptionHelper::encrypt_custom($item->id) . "' class='inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-800 focus:ring-4 focus:ring-red-300 dark:focus:ring-red-900' >Delete</a>";
+            $row[4] .= "<a href='dashboard/user/delete/" . EncryptionHelper::encrypt_custom($item->id) . "' class='inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-800 focus:ring-4 focus:ring-red-300 dark:focus:ring-red-900' id='deleteModalBtn'>Delete</a>";
             $list[] = $row;
         }
 

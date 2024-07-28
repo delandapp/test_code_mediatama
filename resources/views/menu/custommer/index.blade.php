@@ -194,6 +194,35 @@
                         $('#loadingModal').toggleClass('hidden').toggleClass('flex');
                     });
             });
+            $(document).on('click', '#deleteModalBtn', function(event) {
+                event.preventDefault();
+                Swal.fire({
+                    title: "Apakah Kamu yakin?",
+                    text: "Menghapus data ini!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, delete it!"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        let requestId = $(this).attr('href').split('/').pop();
+                        axios.delete('/user/delete/' + requestId).then(response => {
+                            Swal.fire({
+                                title: "Deleted!",
+                                text: "Data berhasil di delete.",
+                                icon: "success"
+                            });
+                            table.draw(true);
+                        }).catch(error => {
+                            Toast.fire({
+                                icon: 'error',
+                                title: error.response.data.message
+                            })
+                        })
+                    }
+                });
+            });
 
             $(document).on('click', '#tambahModalBtn', function(event) {
                 event.preventDefault();

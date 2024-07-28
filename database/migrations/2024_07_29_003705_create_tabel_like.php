@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('tabel_like', function (Blueprint $table) {
             $table->id();
-            $table->string('kode_like')->unique();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('materi_id');
             $table->boolean('status');

@@ -41,8 +41,8 @@ class DislikeController extends Controller
             $dataDislike["data_dislike"] = $data->map(function ($data) {
                 return self::formatDataDislike($data);
             });
-            $dataDislike["disliked"] = auth()->user()->dislikes()->where('materi_id', $id)->first()->status;
-            $dataDislike["liked"] = auth()->user()->likes()->where('materi_id', $id)->first()->status;
+            $dataDislike["disliked"] = auth()->user()->dislikes()->where('materi_id', $id)->first() == null ? 0 : auth()->user()->dislikes()->where('materi_id', $id)->first()->status;
+            $dataDislike["liked"] = auth()->user()->likes()->where('materi_id', $id)->first() == null ? 0 : auth()->user()->likes()->where('materi_id', $id)->first()->status;
             $dataDislike["total_dislike"] = $data->where('status', '1')->count();
             return response()->json(['status' => true, 'data' => $dataDislike, 'message' => 'Get dislike video successfully'], 200);
         } catch (\Throwable $th) {

@@ -40,6 +40,40 @@ class UserVideoController extends Controller
             return response()->json(['message' => false, 'errors' => $th, 'message' => $th->getMessage()], 500);
         }
     }
+
+    public function getDataFilter($query)
+    {
+        try {
+            if ($query == 'all') {
+                $data = Materi::with(['videoRequests' => function ($query) {
+                    $query->where('user_id', auth()->user()->id);
+                }])->get();
+            } else if ($query == 'like') {
+                $data = Materi::whereHas('likes', function ($query) {
+                    $query->where('user_id', auth()->user()->id)->where('status', true);
+                })->with(['videoRequests' => function ($query) {
+                    $query->where('user_id', auth()->user()->id)->where('status', true);
+                }])->get();
+            } else if ($query == 'dislike') {
+                $data = Materi::whereHas('dislikes', function ($query) {
+                    $query->where('user_id', auth()->user()->id)->where('status', true);
+                })->with(['videoRequests' => function ($query) {
+                    $query->where('user_id', auth()->user()->id)->where('status', false);
+                }])->get();
+            } else {
+                $data = Materi::whereHas('simpans', function ($query) {
+                    $query->where('user_id', auth()->user()->id)->where('status', true);
+                })->with(['videoRequests' => function ($query) {
+                    $query->where('user_id', auth()->user()->id);
+                }])->get();
+            }
+
+            $data = $this->prepareMateriData($data);
+            return response()->json(['message' => true, 'data' => VideoResource::collection($data), 'message' => 'Sucsess Get Data Materi'], 200);
+        } catch (\Throwable $th) {
+            return response()->json(['message' => false, 'errors' => $th, 'message' => $th->getMessage()], 500);
+        }
+    }
     public function getDataQuery($query)
     {
         try {
@@ -66,7 +100,7 @@ class UserVideoController extends Controller
         event(new RequestVideoCreateEvent(RequestVideoController::formatRequestVideoDataForDatatable($requestData)));
         event(new VideoRequestEvent($requestData));
         event(new VideoNotifikasiEvent(auth()->user()->name . ' Meminta Izin Melihat Video'));
-        return response()->json(['status' => true, 'data' => new VideoResource($requestData), 'message' => 'Request Video created successfully'], 200);
+        return response()->json(['status' => true, 'data' => $requestData, 'message' => 'Request Video created successfully'], 200);
     }
 
     public function prepareMateriData($data)
@@ -85,6 +119,7 @@ class UserVideoController extends Controller
                 default => 'user-video/request?id_user=' . auth()->user()->id . '&id_video=' . $materi->id,
             };
             $materi->thumbnail = Storage::disk('materi')->url($materi->thumbnail);
+            $materi->simpan = auth()->user()->simpans->where('materi_id', $materi->id)->first() == null ? 0 : auth()->user()->simpans->where('materi_id', $materi->id)->first()->status;
             return $materi;
         });
     }

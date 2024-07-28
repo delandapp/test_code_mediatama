@@ -56,8 +56,8 @@ class LikeController extends Controller
             $datalike["data_like"] = $data->map(function ($data) {
                 return self::formatDatalike($data);
             });
-            $datalike['liked'] = auth()->user()->likes()->where('materi_id', $id)->first()->status;
-            $datalike['dislaked'] = auth()->user()->dislikes()->where('materi_id', $id)->first()->status;
+            $datalike['liked'] = auth()->user()->likes()->where('materi_id', $id)->first() == null ? 0 : auth()->user()->likes()->where('materi_id', $id)->first()->status;
+            $datalike['dislaked'] = auth()->user()->dislikes()->where('materi_id', $id)->first() == null ? 0 : auth()->user()->dislikes()->where('materi_id', $id)->first()->status;
             $datalike["total_like"] = $data->where('status', '1')->count();
             return response()->json(['status' => true, 'data' => $datalike, 'message' => 'Get like video successfully'], 200);
         } catch (\Throwable $th) {
