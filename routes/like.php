@@ -1,9 +1,10 @@
 <?php
 
 use App\Http\Controllers\Dashboard\LikeController;
-use Illuminate\Routing\Route;
+use Illuminate\Support\Facades\Route;
 
-Route::get('/like/user/{id}', [LikeController::class, 'userLike']);
-Route::post('/like', [LikeController::class, 'create']);
-Route::post('/like/{id}', [LikeController::class, 'update']);
-Route::delete('/like/{id}', [LikeController::class, 'destroy']);
+Route::get('/user/{id}', [LikeController::class, 'userLike']);
+Route::post('/', [LikeController::class, 'handleLike']);
+Route::get('/get_data/{id}', [LikeController::class, 'getData']);
+Route::post('/{id}', [LikeController::class, 'update']);
+Route::delete('/{id}', [LikeController::class, 'destroy']);

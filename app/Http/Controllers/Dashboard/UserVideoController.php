@@ -111,7 +111,7 @@ class UserVideoController extends Controller
             $materi =
                 Materi::with(['videoRequests' => function ($query) use ($id) {
                     $query->where('user_id', auth()->user()->id)->where('status', 'sedang melihat')->where('video_material_id', $id);
-                }])->find($id);
+                },])->find($id);
             if ($userRequest) {
                 $materi->expires_at = $materi->videoRequests[0]->expires_at;
                 $materi->expired_at = Carbon::parse($materi->videoRequests[0]->expired_at)->timestamp * 1000;

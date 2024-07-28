@@ -32,11 +32,11 @@ class KomentarController extends Controller
         }
     }
 
-    public function getData()
+    public function getData($id)
     {
         try {
             $komentars = auth()->user()->komentars()->get();
-            $komentar = Komentar::where('user_id', '!=', auth()->user()->id)->get();
+            $komentar = Komentar::where('user_id', '!=', auth()->user()->id)->where('materi_id', $id)->get();
             $komentars = $komentars->merge($komentar);
             $data = $komentars->map(function ($komentar) {
                 return self::formatDataKomentar($komentar);
@@ -75,7 +75,8 @@ class KomentarController extends Controller
         ];
     }
 
-    public function show($id) {
+    public function show($id)
+    {
         try {
             $komentar = Komentar::find($id);
             if ($komentar == null) {
@@ -87,7 +88,8 @@ class KomentarController extends Controller
         }
     }
 
-    public function update(Request $request, $id) {
+    public function update(Request $request, $id)
+    {
         try {
             $komentar = Komentar::find($id);
             if ($komentar == null) {

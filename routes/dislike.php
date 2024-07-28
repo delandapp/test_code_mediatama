@@ -1,9 +1,10 @@
 <?php
 
 use App\Http\Controllers\Dashboard\DislikeController;
-use Illuminate\Routing\Route;
+use Illuminate\Support\Facades\Route;
 
-Route::get('/dislike/user/{id}', [DislikeController::class, 'userDislike']);
-Route::post('/dislike', [DislikeController::class, 'create']);
-Route::post('/dislike/{id}', [DislikeController::class, 'update']);
-Route::delete('/dislike/{id}', [DislikeController::class, 'destroy']);
+Route::get('/user/{id}', [DislikeController::class, 'userDislike']);
+Route::get('/get_data/{id}', [DislikeController::class, 'getData']);
+Route::post('/', [DislikeController::class, 'handleDislike']);
+Route::post('/{id}', [DislikeController::class, 'update']);
+Route::delete('/{id}', [DislikeController::class, 'destroy']);

@@ -1,9 +1,9 @@
 <?php
 
 use App\Http\Controllers\Dashboard\SimpanController;
-use Illuminate\Routing\Route;
+use Illuminate\Support\Facades\Route;
 
-Route::get('/simpan/user/{id}', [SimpanController::class, 'userSimpan']);
-Route::post('/simpan', [SimpanController::class, 'create']);
-Route::post('/simpan/{id}', [SimpanController::class, 'update']);
-Route::delete('/simpan/{id}', [SimpanController::class, 'destroy']);
+Route::get('/user/{id}', [SimpanController::class, 'userSimpan']);
+Route::post('/', [SimpanController::class, 'create']);
+Route::post('/{id}', [SimpanController::class, 'update']);
+Route::delete('/{id}', [SimpanController::class, 'destroy']);

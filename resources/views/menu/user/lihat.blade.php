@@ -1,5 +1,4 @@
 @extends('menu.user.layouts.master')
-
 @section('content')
     <div class="p-5">
         <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
@@ -21,7 +20,20 @@
                             <button id="btnSelesai"
                                 class="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-800 focus:ring-4 focus:ring-red-300 dark:focus:ring-red-900"><i
                                     class="fa-solid fa-share-from-square mr-3"></i> Selesai</button>
-                            <i class="fa-regular fa-heart text-3xl"></i>
+                            <div class="py-4">
+                                <a class="inline-flex items-center like-button" href="#" data-id="1">
+                                    <i class="fa-regular fa-heart mr-1 text-2xl" id="icon"></i>
+                                    <span class="text-lg font-bold like-count">0</span>
+                                </a>
+                            </div>
+                            <div class="py-4">
+                                <a class="inline-flex items-center dislike-button" href="#" data-id="1">
+                                    <span class="mr-1">
+                                        <i class="fa-regular fa-face-tired mr-1 text-2xl" id="icon"></i>
+                                    </span>
+                                    <span class="text-lg font-bold dislike-count">0</span>
+                                </a>
+                            </div>
                         </div>
                     </div>
                     <div class="col-span-12 flex justify-between mt-5 flex-col">
@@ -67,7 +79,8 @@
             getData();
             async function getData() {
                 setLoadingState();
-                let url = '/user-video/show/{{ $id }}'
+                let url = '/user-video/show/{{ $id }}';
+                let videoId = {{ $id }}
                 axios.get(url)
                     .then(response => {
                         const videoData = response.data.data;
@@ -78,8 +91,18 @@
                         error.response.status === 404 ? window.location.href = '/user-video' : console.log(
                             error)
                     });
-                axios.get('/komentar/get_data').then(response => {
+                axios.get(`/komentar/get_data/${videoId}`).then(response => {
                     setKomentarState(response.data.data);
+                }).catch(error => {
+                    console.log(error)
+                });
+                axios.get(`/user-video/like/get_data/${videoId}`).then(response => {
+                    setLikeState(response.data.data);
+                }).catch(error => {
+                    console.log(error)
+                });
+                axios.get(`/user-video/dislike/get_data/${videoId}`).then(response => {
+                    setDislikeState(response.data.data);
                 }).catch(error => {
                     console.log(error)
                 });
@@ -143,6 +166,34 @@
                 $('#komentarContainer').empty();
                 $('#komentarContainer').removeClass('hidden').addClass('grid');
                 displayKomentar(komentar);
+            }
+
+            function setLikeState(like) {
+                $('.like-count').text(like.total_like);
+                if (like.liked != 1 && like.dislaked == 1) {
+                    $('.like-button').css('pointer-events', 'none').addClass('disabled');
+                    $('.like-button #icon').attr('data-prefix', 'far');
+                } else if (like.liked == 1 && like.dislaked != 1) {
+                    $('.like-button').css('pointer-events', 'auto').addClass('text-red-600');
+                    $('.like-button #icon').attr('data-prefix', 'fas');
+                } else {
+                    $('.like-button').css('pointer-events', 'auto').removeClass('text-red-600');
+                    $('.like-button #icon').attr('data-prefix', 'far');
+                }
+            }
+
+            function setDislikeState(dislike) {
+                $('.dislike-count').text(dislike.total_dislike);
+                if (dislike.disliked != 1 && dislike.liked == 1) {
+                    $('.dislike-button').css('pointer-events', 'none').addClass('disabled');
+                    $('.dislike-button #icon').attr('data-prefix', 'far');
+                } else if (dislike.disliked == 1 && dislike.liked != 1) {
+                    $('.dislike-button').css('pointer-events', 'auto').addClass('text-red-600');
+                    $('.dislike-button #icon').attr('data-prefix', 'fas');
+                } else {
+                    $('.dislike-button').css('pointer-events', 'auto').removeClass('text-red-600');
+                    $('.dislike-button #icon').attr('data-prefix', 'far');
+                }
             }
 
             function displayKomentar(komentar) {
@@ -272,7 +323,52 @@
             $(document).on('click', '.komentar', function(event) {
                 const komentarId = $(this).attr('id').split('-')[1];
                 showSweetAlertEditKomentar(komentarId);
-            })
+            });
+
+            $(document).on('click', '.like-button', function(event) {
+                event.preventDefault();
+                const button = $(this);
+                const icon = button.find('#icon');
+                let likeCount = parseInt(button.find('.like-count').text());
+                if (icon.data('prefix') === 'fas') {
+                    icon.attr('data-prefix', 'far');
+                    button.removeClass('text-red-600');
+                    button.find('.like-count').text(likeCount > 0 ? likeCount - 1 : 0);
+                    $('.dislike-button').removeClass('disabled').css('pointer-events', 'auto');
+                } else {
+                    icon.attr('data-prefix', 'fas');;
+                    button.addClass('text-red-600');
+                    button.find('.like-count').text(likeCount + 1);
+                    $('.dislike-button').addClass('disabled').css('pointer-events', 'none');
+                }
+                const videoId = {{ $id }};
+                const userId = {{ auth()->user() ? auth()->user()->id : null }}
+                handleLike(videoId, userId);
+            });
+
+            $(document).on('click', '.dislike-button', function(event) {
+                event.preventDefault();
+                const button = $(this);
+                const id = button.data('id');
+                const icon = button.find('#icon');
+                let dislikeCount = parseInt(button.find('.dislike-count').text());
+                if (icon.data('prefix') === 'fas') {
+                    icon.attr('data-prefix', 'far');
+                    button.removeClass('text-red-600');
+                    button.find('.like-count').text(dislikeCount > 0 ? dislikeCount - 1 :
+                        0);
+                    $('.like-button').removeClass('disabled').css('pointer-events', 'auto');
+                } else {
+                    icon.attr('data-prefix', 'fas');;
+                    button.addClass('text-red-600');
+                    button.find('.like-count').text(dislikeCount + 1);
+                    $('.like-button').addClass('disabled').css('pointer-events', 'none');
+                }
+                button.toggleClass('disliked');
+                const videoId = {{ $id }};
+                const userId = {{ auth()->user() ? auth()->user()->id : null }}
+                handleDislike(videoId, userId);
+            });
 
             async function showSweetAlertEditKomentar(komentarId) {
                 try {
@@ -341,6 +437,49 @@
                     })
                 });
             };
+
+            async function handleLike(videoId, userId) {
+                try {
+                    await axios.post(`/user-video/like/`, {
+                        'materi_id': videoId,
+                        'user_id': userId
+                    }).then(function(response) {
+                        Toast.fire({
+                            icon: 'success',
+                            title: response.data.message
+                        });
+                    }).catch(function(error) {
+                        Toast.fire({
+                            icon: 'error',
+                            title: response.data.message
+                        });
+                    });
+                } catch (error) {
+                    console.error('Error liking:', error);
+                }
+            }
+
+            async function handleDislike(videoId, userId) {
+                try {
+                    await axios.post(`/user-video/dislike/`, {
+                        'materi_id': videoId,
+                        'user_id': userId
+                    }).then(function(response) {
+                        Toast.fire({
+                            icon: 'success',
+                            title: response.data.message
+                        });
+                    }).catch(function(error) {
+                        Toast.fire({
+                            icon: 'error',
+                            title: response.data.message
+                        });
+                    });
+                } catch (error) {
+                    console.error('Error liking:', error);
+                }
+            }
+
 
             window.Echo.channel('laravel_database_approve-channel')
                 .listen('.doneadmin-user-event', (e) => {

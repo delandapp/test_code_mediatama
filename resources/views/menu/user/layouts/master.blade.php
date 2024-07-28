@@ -19,8 +19,6 @@
 
     {{-- Vite CSS --}}
     @vite(['resources/js/app.js', 'resources/js/index.js', 'resources/css/dataTables.css', 'resources/css/app.css'])
-
-
 </head>
 
 <body>

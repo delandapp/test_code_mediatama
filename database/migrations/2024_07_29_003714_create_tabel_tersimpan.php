@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('tabel_simpan', function (Blueprint $table) {
             $table->id();
-            $table->string('kode_simpan')->unique();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('materi_id');
             $table->boolean('status');

@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Models\Dislike\Dislike;
 use App\Models\Komentar\Komentar;
+use App\Models\Like\Like;
 use App\Models\Materi\Materi;
 use App\Models\RequestVideo\RequestVideo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -69,5 +70,10 @@ class User extends Authenticatable
     public function dislikes()
     {
         return $this->hasMany(Dislike::class);
+    }
+
+    public function likes()
+    {
+        return $this->hasMany(Like::class);
     }
 }
