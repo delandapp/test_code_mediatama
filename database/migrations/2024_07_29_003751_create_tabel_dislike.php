@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('tabel_dislike', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->unsignedInteger('materi_id');
+            $table->unsignedBigInteger('materi_id');
             $table->boolean('status');
             $table->softDeletes();
             $table->timestamps();

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('kode_like')->unique();
             $table->unsignedBigInteger('user_id');
-            $table->unsignedInteger('materi_id');
+            $table->unsignedBigInteger('materi_id');
             $table->boolean('status');
             $table->softDeletes();
             $table->timestamps();
