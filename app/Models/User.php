@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use App\Models\Dislike\Dislike;
 use App\Models\Komentar\Komentar;
 use App\Models\Materi\Materi;
 use App\Models\RequestVideo\RequestVideo;
@@ -63,5 +64,10 @@ class User extends Authenticatable
     public function komentars()
     {
         return $this->hasMany(Komentar::class);
+    }
+
+    public function dislikes()
+    {
+        return $this->hasMany(Dislike::class);
     }
 }
