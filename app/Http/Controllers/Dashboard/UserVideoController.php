@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Events\RequestVideo\RequestVideoCreateEvent;
+use App\Events\RequestVideo\RequestVideoDoneEvent;
 use App\Events\VideoUser\VideoNotifikasiEvent;
 use App\Events\VideoUser\VideoRequestEvent;
 use App\Http\Controllers\Controller;
@@ -154,6 +155,7 @@ class UserVideoController extends Controller
         $materi->status = 'done';
         $materi->save();
         event(new VideoNotifikasiEvent(auth()->user()->name . ' Telah Selesai Melihat Video'));
+        event(new RequestVideoDoneEvent(RequestVideoController::formatRequestVideoDataForDatatable($materi)));
         return response()->json(['message' => 'Cache cleared successfully']);
     }
 }

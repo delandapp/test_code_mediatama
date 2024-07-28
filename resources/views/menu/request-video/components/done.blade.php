@@ -1,4 +1,4 @@
- <table id="tabel_approve" class="display table-auto w-full stripe row-border order-column">
+ <table id="tabel_done" class="display table-auto w-full stripe row-border order-column">
      <thead>
          <tr>
              <th>No</th>
@@ -10,8 +10,10 @@
              <th>Expired</th>
              <th>Lama Menonton</th>
              <th>Tanggal Approve</th>
-             @can('cancel-video')
-                 <th>Cancel</th>
+             @can('edit-video')
+                 <th>Action</th>
+             @elsecan('hapus-video')
+                 <th>Action</th>
              @endcan
          </tr>
      </thead>

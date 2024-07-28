@@ -6,6 +6,7 @@
             @include('menu.user.components.header-video')
             <div class="p-5">
                 @include('menu.user.components.skelaton-video')
+
                 <div class="hidden gap-4" id="videoContainer">
                     <div class="col-span-12">
                         <video class="w-full h-96 bg-cover bg-center rounded-md" src="" controls id="video">
@@ -37,9 +38,17 @@
                                 id="btnKomentar">Submit</button>
                         </div>
                     </div>
+                    <div class="col-span-12 mt-5">
+                        <div class="px-8">
+                            @include('menu.user.components.skelaton-komentar')
+                        </div>
+                        <div class="grid gap-4" id="komentarContainer">
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
     </div>
     </div>
     </div>
@@ -47,6 +56,7 @@
 
 @section('scripts')
     <script type="module">
+        const videoContainer = $('#komentarContainer');
         getData();
         async function getData() {
             setLoadingState();
@@ -54,13 +64,17 @@
             axios.get(url)
                 .then(response => {
                     const videoData = response.data.data;
-                    console.log(videoData)
                     setDataState(videoData);
-
                 })
                 .catch(error => {
+                    console.log(error)
                     error.response.status === 404 ? window.location.href = '/user-video' : console.log(error)
                 });
+            axios.get('/komentar/get_data').then(response => {
+                setKomentarState(response.data.data);
+            }).catch(error => {
+                console.log(error)
+            });
         }
 
         function startTimer(duration) {
@@ -104,16 +118,103 @@
             $('#notFound').addClass('hidden').removeClass('flex');
             $('#videoContainer').removeClass('hidden').addClass('grid');
             displayVideo(videoData);
-            const expiresAt = videoData.expired_at ?
-                new Date(videoData.expired_at) :
-                null;
+
+
+            const expiresAt = videoData && videoData.expired_at ? new Date(videoData.expired_at) : null;
             const timeRemaining = expiresAt ? expiresAt - new Date() : 0;
-            console.log(timeRemaining)
+            console.log(expiresAt)
             if (timeRemaining > 0) {
                 startTimer(timeRemaining);
             } else {
                 window.location.href = '/user-video';
             }
         }
+
+        function setKomentarState(komentar) {
+            $('#loadingKomentar').addClass('hidden').removeClass('flex');
+            $('#komentarContainer').empty();
+            $('#komentarContainer').removeClass('hidden').addClass('grid');
+            displayKomentar(komentar);
+        }
+
+        function displayKomentar(komentar) {
+            komentar.forEach(komentar => {
+                const komentarUserName = komentar.name;
+                const komentarUserEmail = komentar.email;
+                const komentarText = komentar.komentar;
+
+                const komentarElementString = `
+<figure class="w-full px-4 py-2 rounded overflow-hidden bg-gray-100" id="komentar-${komentar.id}">
+    <div class="flex items-center mb-4 text-yellow-300">
+        <svg class="w-5 h-5 me-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 20">
+            <path d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z"/>
+        </svg>
+        <svg class="w-5 h-5 me-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 20">
+            <path d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z"/>
+        </svg>
+        <svg class="w-5 h-5 me-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 20">
+            <path d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z"/>
+        </svg>
+        <svg class="w-5 h-5 me-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 20">
+            <path d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z"/>
+        </svg>
+        <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 20">
+            <path d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z"/>
+        </svg>
+    </div>
+    <blockquote>
+        <p class="text-2xl font-semibold text-gray-900 dark:text-white">"${komentarText}"</p>
+    </blockquote>
+    <figcaption class="flex items-center mt-6 space-x-3 rtl:space-x-reverse">
+        <img class="w-6 h-6 rounded-full" src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/bonnie-green.png" alt="profile picture">
+        <div class="flex items-center divide-x-2 rtl:divide-x-reverse divide-gray-300 dark:divide-gray-700">
+            <cite class="pe-3 font-medium text-gray-900 dark:text-white">${komentarUserName}</cite>
+            <cite class="ps-3 text-sm text-gray-500 dark:text-gray-400">${komentarUserEmail}</cite>
+        </div>
+    </figcaption>
+</figure>
+`;
+                const komentarElement = $(komentarElementString);
+                komentarElement.data('komentar', komentar);
+                komentarElement.appendTo(komentarContainer);
+            });
+        };
+
+        $('#btnKomentar').on('click', function(event) {
+            event.preventDefault();
+            var videoId = {{ $id }};
+            var komentarText = $('#komentar').val();
+            addKomentar(videoId, komentarText);
+            $('#komentar').val('');
+        });
+
+        async function addKomentar(videoId, komentarText) {
+            axios.post('/komentar', {
+                'materi_id': videoId,
+                'komentar': komentarText
+            }).then(function(response) {
+                Toast.fire({
+                    icon: 'success',
+                    title: response.data.message
+                });
+            }).catch(function(error) {
+                Toast.fire({
+                    icon: 'error',
+                    title: error.response.data.message
+                })
+            });
+        }
+
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            iconColor: 'white',
+            customClass: {
+                popup: 'colored-toast',
+            },
+            showConfirmButton: false,
+            timer: 1500,
+            timerProgressBar: true,
+        });
     </script>
 @endsection

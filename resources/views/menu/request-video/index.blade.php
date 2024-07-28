@@ -64,10 +64,14 @@
                         <button class="inline-block w-full p-4 border-b-2 rounded-t-lg active-tab" id="outstanding-styled-tab"
                             type="button">Request User</button>
                     </li>
-                    @canany(['approve-video', 'cancel-video'])
+                    @canany(['approve-video', 'cancel-video', 'done-video'])
                         <li class="flex-shrink-1 flex-grow">
                             <button class="inline-block p-4 w-full border-b-2 rounded-t-lg" id="proses-styled-tab"
                                 type="button">Approve Request User</button>
+                        </li>
+                        <li class="flex-shrink-1 flex-grow">
+                            <button class="inline-block p-4 w-full border-b-2 rounded-t-lg" id="done-styled-tab"
+                                type="button">Done Request User</button>
                         </li>
                     @endcanany
                 </ul>
@@ -77,9 +81,12 @@
                     <div class="flex w-full p-4 rounded-lg bg-gray-50 dark:bg-gray-800 flex-grow" id="styled-outstanding">
                         @include('menu.request-video.components.pending')
                     </div>
-                    @canany(['approve-video', 'cancel-video'])
+                    @canany(['approve-video', 'cancel-video', 'done-video'])
                         <div class="flex w-full p-4 rounded-lg bg-gray-50 dark:bg-gray-800 flex-grow" id="styled-proses">
                             @include('menu.request-video.components.approve')
+                        </div>
+                        <div class="flex w-full p-4 rounded-lg bg-gray-50 dark:bg-gray-800 flex-grow" id="styled-done">
+                            @include('menu.request-video.components.done')
                         </div>
                     @endcanany
                 </div>
@@ -113,19 +120,21 @@
 @push('scripts')
     <script type="module">
         $(document).ready(function() {
-            const canActionOrder = @json(auth()->user()->canAny(['edit-order', 'hapus-order']));
-            const canApproveOrder = @json(auth()->user()->canAny(['approve-order', ' cancel-order']));
             var satuan_waktu = null;
+            const request_tabel_active = $('#styled-outstanding').hasClass('active-tab');
             let tabel_approve;
+            let tabel_done;
             let tabel_pending = initializeTable('#tabel_pending',
                 "{{ url('request/get_requestvideo?status=pending') }}");;
 
             $('#outstanding-styled-tab').on('click', function() {
                 $('#styled-outstanding').css('margin-left', '0');
                 $('#styled-proses').css('margin-left', '100%');
+                $('#styled-done').css('margin-left', '100%');
                 $(this).addClass('active-tab');
                 $(this).removeClass('hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300');
                 $('#proses-styled-tab').removeClass('active-tab');
+                $('#done-styled-tab').removeClass('active-tab');
                 $('#proses-styled-tab').addClass(
                     'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300');
             });
@@ -133,14 +142,32 @@
             $('#proses-styled-tab').on('click', function() {
                 $('#styled-outstanding').css('margin-left', '-100%');
                 $('#styled-proses').css('margin-left', '0');
+                $('#styled-done').css('margin-left', '100%');
                 $(this).addClass('active-tab');
                 $(this).removeClass('hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300');
                 $('#outstanding-styled-tab').removeClass('active-tab');
+                $('#done-styled-tab').removeClass('active-tab');
                 $('#outstanding-styled-tab').addClass(
                     'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300');
                 if (!tabel_approve) {
                     tabel_approve = initializeTable('#tabel_approve',
                         "{{ url('request/get_requestvideo?status=approved') }}");
+                }
+            });
+
+            $('#done-styled-tab').on('click', function() {
+                $('#styled-outstanding').css('margin-left', '-100%');
+                $('#styled-proses').css('margin-left', '-100%');
+                $('#styled-done').css('margin-left', '0');
+                $(this).addClass('active-tab');
+                $(this).removeClass('hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300');
+                $('#outstanding-styled-tab').removeClass('active-tab');
+                $('#proses-styled-tab').removeClass('active-tab');
+                $('#done-styled-tab').addClass(
+                    'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300');
+                if (!tabel_done) {
+                    tabel_done = initializeTable('#tabel_done',
+                        "{{ url('request/get_requestvideo?status=done') }}");
                 }
             });
 
@@ -185,11 +212,13 @@
                             orderable: true,
                             className: "dark:text-gray-300"
                         },
-                        {
-                            targets: canActionOrder && canApproveOrder ? [9, 10] : [9],
-                            orderable: false,
-                            className: "p-4 space-x-2 whitespace-nowrap dark:text-gray-300"
-                        }
+                        @canany(['cancel-video', 'done-video'])
+                            {
+                                targets: request_tabel_active ? [10] : [9],
+                                orderable: false,
+                                className: "p-4 space-x-2 whitespace-nowrap dark:text-gray-300"
+                            }
+                        @endcanany ()
                     ]
                 });
             }
@@ -316,8 +345,8 @@
                     confirmButtonText: "Yes, delete it!"
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        let videoId = $(this).attr('href').split('/').pop();
-                        axios.delete('/video/' + videoId).then(response => {
+                        let requestId = $(this).attr('href').split('/').pop();
+                        axios.delete('/request/' + requestId).then(response => {
                             Swal.fire({
                                 title: "Deleted!",
                                 text: "Data berhasil di delete.",
@@ -361,7 +390,7 @@
                 $('#approveModal').toggleClass('hidden').toggleClass('flex');
                 $('#time_expired').remove('hidden').removeClass('block');
                 $("input").removeClass(
-                            'border-red-500').val('')
+                    'border-red-500').val('')
                 $('.error-message-time').text('')
             });
 
@@ -379,7 +408,6 @@
                 if (cekApprove) {
                     url = `${url}?waktu=${waktu}`
                 }
-                console.log(url);
                 $('#ModalButtonTextApprove , #approve-loading-button').toggleClass('hidden');
                 axios.get(url)
                     .then(response => {
@@ -485,6 +513,19 @@
                         }
                     }
                     tabel_pending.row.add(cancelData, 0).draw(true);
+                })
+                .listen('.requestvideo-done-event', (e) => {
+                    const cancelData = e.message;
+                    if (tabel_approve && tabel_approve.rows) {
+                        const rowIndex = tabel_approve.rows().data().toArray().findIndex(row => {
+                            return row && row[1] && row[1].includes(cancelData[1]);
+                        });
+
+                        if (rowIndex !== -1) {
+                            tabel_approve.row(rowIndex).remove().draw(false);
+                        }
+                    }
+                    tabel_done.row.add(cancelData, 0).draw(true);
                 })
         });
     </script>

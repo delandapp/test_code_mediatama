@@ -65,7 +65,6 @@
                     setDataState(response.data.data);
                     return;
                 } catch (error) {
-                    console.log(error)
                     setNotFoundState();
                     return
                 }
@@ -122,6 +121,24 @@
                     if (thumbnailToUpdate.length > 0) {
                         const videoData = thumbnailToUpdate.data('video');
                         videoData.access = 'Pending';
+                        videoData.url = '';
+                        thumbnailToUpdate.remove();
+                        displayThumbnails([videoData]);
+                    }
+                }
+            })
+            .listen('.reject-user-event', (e) => {
+                const newData = e.message;
+                const userId = {{ auth()->user() ? auth()->user()->id : null }}
+                if (newData.user_id == userId) {
+                    Toast.fire({
+                        icon: 'error',
+                        title: 'Request Kamu Di Tolak Oleh Admin'
+                    })
+                    const thumbnailToUpdate = $(`#${newData.video_material_id}`);
+                    if (thumbnailToUpdate.length > 0) {
+                        const videoData = thumbnailToUpdate.data('video');
+                        videoData.access = 'Minta Request';
                         videoData.url = 'user-video/request?id_user=' + {{ auth()->user()->id }} + '&id_video=' +
                             videoData.id;
                         thumbnailToUpdate.remove();

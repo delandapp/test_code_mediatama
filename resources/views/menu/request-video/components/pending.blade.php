@@ -8,6 +8,7 @@
              <th>Tanggal</th>
              <th>Status</th>
              <th>Expired</th>
+             <th>Lama Menonton</th>
              <th>Tanggal Approve</th>
              @can('approve-video')
                  <th>Approve</th>

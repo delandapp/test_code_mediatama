@@ -26,6 +26,7 @@ class RoleSeeder extends Seeder
         Permission::create(['name' => 'approve-video']);
         Permission::create(['name' => 'cancel-video']);
         Permission::create(['name' => 'request-video']);
+        Permission::create(['name' => 'done-video']);
 
         Permission::create(['name' => 'tambah-materi']);
         Permission::create(['name' => 'edit-materi']);
@@ -48,6 +49,7 @@ class RoleSeeder extends Seeder
             'lihat-video',
             'approve-video',
             'cancel-video',
+            'done-video',
         ]);
 
         $roleCustommer = Role::findByName('customer');

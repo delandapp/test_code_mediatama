@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Events\RequestVideo\RequestVideoApproveEvent;
 use App\Events\RequestVideo\RequestVideoCancelEvent;
+use App\Events\RequestVideo\RequestVideoDeleteEvent;
 use App\Events\VideoUser\VideoApproveEvent;
 use App\Events\VideoUser\VideoCancelEvent;
+use App\Events\VideoUser\VideoRejectedEvent;
 use App\Helpers\EncryptionHelper;
 use App\Http\Controllers\Controller;
 use App\Models\RequestVideo\RequestVideo;
@@ -40,6 +42,19 @@ class RequestVideoController extends Controller
         ];
 
         return response()->json($output);
+    }
+
+    public function destroy($id)
+    {
+        $id = EncryptionHelper::decrypt_custom($id);
+        $requestData = RequestVideo::find($id);
+        if ($requestData == null) {
+            return response()->json(['status' => false, 'message' => 'Request not found'], 404);
+        }
+        event(new RequestVideoDeleteEvent($this->formatRequestVideoDataForDatatable($requestData)));
+        event(new VideoRejectedEvent($requestData));
+        $requestData->delete();
+        return response()->json(['status' => true, 'message' => 'Request deleted successfully'], 200);
     }
 
     public function approveRequestVideo(Request $request, $id)
@@ -98,8 +113,9 @@ class RequestVideoController extends Controller
         $data[] = Carbon::parse($requestvideo->created_at)->format('d-m-Y');
         $data[] = $requestvideo->status == 'pending' ? "<span class='pending text-sm font-medium rounded dark:bg-yellow-900 dark:text-purple-300'>" . $requestvideo->status . "</span>" : "<span class='approve text-sm font-medium rounded dark:bg-yellow-900 dark:text-purple-300'>" . $requestvideo->status . "</span>";
         $data[] = $requestvideo->expires_at ? $requestvideo->expires_at . ' Menit' : '-';
+        $data[] = $requestvideo->lama_menonton ? $requestvideo->lama_menonton . ' Menit' : '-';
         $data[] = $requestvideo->approved_at ? Carbon::parse($requestvideo->approved_at)->format('d-m-Y') : '-';
-        if (Auth::user()->can('approve-video') || Auth::user()->can('cancel-video')) {
+        if ((Auth::user()->can('approve-video') || Auth::user()->can('cancel-video')) && $requestvideo->status != 'done') {
             $data[] = null;
         }
         if (Auth::user()->can('approve-video') && $requestvideo->status == 'pending') {
@@ -117,7 +133,7 @@ class RequestVideoController extends Controller
                 "<a href='request/edit/" . EncryptionHelper::encrypt_custom($requestvideo->id) . "' class='mr-2 inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' id='editModalBtn'>Edit</a>";
         }
 
-        if (Auth::user()->can('hapus-video') && $requestvideo->status == 'pending') {
+        if (Auth::user()->can('hapus-video') && $requestvideo->status == 'pending' || $requestvideo->status == 'done') {
             $data[count($data) - 1] .=
                 "<a href='request/delete/" . EncryptionHelper::encrypt_custom($requestvideo->id) . "' class='inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-800 focus:ring-4 focus:ring-red-300 dark:focus:ring-red-900' id='deleteModalBtn'>Delete</a>";
         }

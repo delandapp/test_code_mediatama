@@ -153,7 +153,6 @@
                 }).catch(error => {
                     const errors = error.response.data.errors;
                     for (const field in errors) {
-                        console.log(field);
                         if (field == 'video' || field == 'thumbnail') {
                             $(`input[name=${field}]`)
                                 .next(".error-message")

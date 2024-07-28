@@ -1,4 +1,5 @@
 <?php
+
 use App\Http\Controllers\Dashboard\RequestVideoController;
 use Illuminate\Support\Facades\Route;
 

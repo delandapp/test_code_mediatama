@@ -2,6 +2,7 @@
 
 namespace App\Models\Materi;
 
+use App\Models\Komentar\Komentar;
 use App\Models\RequestVideo\RequestVideo;
 use App\Models\User;
 use App\Observers\MateriObserver;
@@ -26,5 +27,10 @@ class Materi extends Model
     public function videoRequests()
     {
         return $this->hasMany(RequestVideo::class, 'video_material_id', 'id');
+    }
+
+    public function komentars()
+    {
+        return $this->hasMany(Komentar::class, 'materi_id', 'id');
     }
 }

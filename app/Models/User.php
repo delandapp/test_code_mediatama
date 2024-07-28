@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use App\Models\Komentar\Komentar;
 use App\Models\Materi\Materi;
 use App\Models\RequestVideo\RequestVideo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -57,5 +58,10 @@ class User extends Authenticatable
     public function videoRequests()
     {
         return $this->hasMany(RequestVideo::class);
+    }
+
+    public function komentars()
+    {
+        return $this->hasMany(Komentar::class);
     }
 }
