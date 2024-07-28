@@ -35,7 +35,8 @@
             "Tests\\": "tests/"
         },
         "files": [
-            "app/Helpers/EncryptionHelper.php"
+            "app/Helpers/EncryptionHelper.php",
+            "app/Helpers/HitungLamaWaktuMenonton.php"
         ]
     },
     "scripts": {

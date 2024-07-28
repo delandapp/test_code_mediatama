@@ -70,6 +70,10 @@
                                 type="button">Approve Request User</button>
                         </li>
                         <li class="flex-shrink-1 flex-grow">
+                            <button class="inline-block p-4 w-full border-b-2 rounded-t-lg" id="melihat-styled-tab"
+                                type="button">Sedang Melihat Request User</button>
+                        </li>
+                        <li class="flex-shrink-1 flex-grow">
                             <button class="inline-block p-4 w-full border-b-2 rounded-t-lg" id="done-styled-tab"
                                 type="button">Done Request User</button>
                         </li>
@@ -84,6 +88,9 @@
                     @canany(['approve-video', 'cancel-video', 'done-video'])
                         <div class="flex w-full p-4 rounded-lg bg-gray-50 dark:bg-gray-800 flex-grow" id="styled-proses">
                             @include('menu.request-video.components.approve')
+                        </div>
+                        <div class="flex w-full p-4 rounded-lg bg-gray-50 dark:bg-gray-800 flex-grow" id="styled-melihat">
+                            @include('menu.request-video.components.sedang-melihat')
                         </div>
                         <div class="flex w-full p-4 rounded-lg bg-gray-50 dark:bg-gray-800 flex-grow" id="styled-done">
                             @include('menu.request-video.components.done')
@@ -123,6 +130,7 @@
             var satuan_waktu = null;
             const request_tabel_active = $('#styled-outstanding').hasClass('active-tab');
             let tabel_approve;
+            let tabel_melihat;
             let tabel_done;
             let tabel_pending = initializeTable('#tabel_pending',
                 "{{ url('request/get_requestvideo?status=pending') }}");;
@@ -131,23 +139,45 @@
                 $('#styled-outstanding').css('margin-left', '0');
                 $('#styled-proses').css('margin-left', '100%');
                 $('#styled-done').css('margin-left', '100%');
+                $('#styled-melihat').css('margin-left', '100%');
                 $(this).addClass('active-tab');
                 $(this).removeClass('hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300');
-                $('#proses-styled-tab').removeClass('active-tab');
-                $('#done-styled-tab').removeClass('active-tab');
-                $('#proses-styled-tab').addClass(
+                $('#proses-styled-tab, #done-styled-tab, #melihat-styled-tab').removeClass('active-tab');
+                $('#proses-styled-tab, #done-styled-tab, #melihat-styled-tab').addClass(
                     'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300');
+            });
+
+            $('#melihat-styled-tab').on('click', function() {
+                $('#styled-melihat').css('margin-left', '0');
+                $('#styled-done').css('margin-left', '100%');
+                $('#styled-proses').css('margin-left', '-100%');
+                $('#styled-outstanding').css('margin-left', '-100%');
+                $(this).addClass('active-tab');
+                $(this).removeClass('hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300');
+                $('#proses-styled-tab, #done-styled-tab, #outstanding-styled-tab').removeClass(
+                    'active-tab');
+                $('#proses-styled-tab, #done-styled-tab, #outstanding-styled-tab').addClass(
+                    'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300');
+                if (!tabel_melihat) {
+                    tabel_melihat = initializeTable('#tabel_melihat',
+                        "{{ url('request/get_requestvideo?status=sedang melihat') }}");
+                }
+                if (!tabel_approve) {
+                    tabel_approve = initializeTable('#tabel_approve',
+                        "{{ url('request/get_requestvideo?status=approved') }}");
+                }
             });
 
             $('#proses-styled-tab').on('click', function() {
                 $('#styled-outstanding').css('margin-left', '-100%');
                 $('#styled-proses').css('margin-left', '0');
                 $('#styled-done').css('margin-left', '100%');
+                $('#styled-melihat').css('margin-left', '100%');
                 $(this).addClass('active-tab');
                 $(this).removeClass('hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300');
-                $('#outstanding-styled-tab').removeClass('active-tab');
-                $('#done-styled-tab').removeClass('active-tab');
-                $('#outstanding-styled-tab').addClass(
+                $('#melihat-styled-tab, #done-styled-tab, #outstanding-styled-tab').removeClass(
+                    'active-tab');
+                $('#done-styled-tab, #melihat-styled-tab, #outstanding-styled-tab').addClass(
                     'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300');
                 if (!tabel_approve) {
                     tabel_approve = initializeTable('#tabel_approve',
@@ -158,12 +188,13 @@
             $('#done-styled-tab').on('click', function() {
                 $('#styled-outstanding').css('margin-left', '-100%');
                 $('#styled-proses').css('margin-left', '-100%');
+                $('#styled-melihat').css('margin-left', '-100%');
                 $('#styled-done').css('margin-left', '0');
                 $(this).addClass('active-tab');
                 $(this).removeClass('hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300');
-                $('#outstanding-styled-tab').removeClass('active-tab');
-                $('#proses-styled-tab').removeClass('active-tab');
-                $('#done-styled-tab').addClass(
+                $('#proses-styled-tab, #melihat-styled-tab, #outstanding-styled-tab').removeClass(
+                    'active-tab');
+                $('#proses-styled-tab, #melihat-styled-tab, #outstanding-styled-tab').addClass(
                     'hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300');
                 if (!tabel_done) {
                     tabel_done = initializeTable('#tabel_done',
@@ -363,6 +394,35 @@
                 });
             });
 
+            $(document).on('click', '#btnSelesai', function(event) {
+                event.preventDefault();
+                Swal.fire({
+                    title: "Apakah Kamu yakin?",
+                    text: "Menghentikan user yang menonton video sekarang!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, aku menghentikan!"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        axios.post($(this).attr('href'));
+                        Swal.fire({
+                            title: "Video Berhasil Di Hentikan!",
+                            text: "Video yang kamu request akan di hapus dari sistem!",
+                            icon: "success"
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: 'Video berhasil di hentikan!'
+                                })
+                            }
+                        });
+                    }
+                });
+            });
+
             $(document).on('click', '#approveModalBtn', function(event) {
                 event.preventDefault();
                 $('#modalApproveLabel').text('Approve Orders');
@@ -503,7 +563,7 @@
                 })
                 .listen('.requestvideo-cancel-event', (e) => {
                     const cancelData = e.message;
-                    if (tabel_approve && tabel_approve.rows) {
+                    if (tabel_approve.rows) {
                         const rowIndex = tabel_approve.rows().data().toArray().findIndex(row => {
                             return row && row[1] && row[1].includes(cancelData[1]);
                         });
@@ -512,11 +572,29 @@
                             tabel_approve.row(rowIndex).remove().draw(false);
                         }
                     }
-                    tabel_pending.row.add(cancelData, 0).draw(true);
+                    if (tabel_approve) {
+
+                        tabel_pending.row.add(cancelData, 0).draw(true);
+                    }
                 })
                 .listen('.requestvideo-done-event', (e) => {
                     const cancelData = e.message;
-                    if (tabel_approve && tabel_approve.rows) {
+                    if (tabel_melihat.rows) {
+                        const rowIndex = tabel_melihat.rows().data().toArray().findIndex(row => {
+                            return row && row[1] && row[1].includes(cancelData[1]);
+                        });
+
+                        if (rowIndex !== -1) {
+                            tabel_melihat.row(rowIndex).remove().draw(false);
+                        }
+                    }
+                    if (tabel_done) {
+                        tabel_done.row.add(cancelData, 0).draw(true);
+                    }
+                })
+                .listen('.requestvideo-melihat-event', (e) => {
+                    const cancelData = e.message;
+                    if (tabel_approve.rows) {
                         const rowIndex = tabel_approve.rows().data().toArray().findIndex(row => {
                             return row && row[1] && row[1].includes(cancelData[1]);
                         });
@@ -525,7 +603,9 @@
                             tabel_approve.row(rowIndex).remove().draw(false);
                         }
                     }
-                    tabel_done.row.add(cancelData, 0).draw(true);
+                    if (tabel_melihat) {
+                        tabel_melihat.row.add(cancelData, 0).draw(true);
+                    }
                 })
         });
     </script>

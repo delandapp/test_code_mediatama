@@ -32,8 +32,8 @@ class UserController extends Controller
         foreach ($data as $item) {
             $row = [];
             $row[] = $start++;
-            $row[] = $item->name;
-            $row[] = $item->email;
+            $row[] = "<div class='flex flex-col'> <p class='font-bold text-sm'>" . $item->name_customer . "</p> <p class='text-sm'>" . $item->email . "</p> </div>";
+            $row[] = $item->getRoleNames();
             $row[] = Carbon::parse($item->created_at)->format('d-m-Y');
             $row[] = "";
             $row[4] .= "<a href='dashboard/user/edit/" . EncryptionHelper::encrypt_custom($item->id) . "' class='inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' id='editModalBtn'>Edit</a>";
@@ -66,7 +66,7 @@ class UserController extends Controller
                 'password' => bcrypt($data['password'] ?? 'Password124@'),
             ]);
 
-            $user->assignRole('custommer');
+            $user->assignRole('customer');
 
             event(new UserCreateEvent($user));
 
@@ -88,5 +88,49 @@ class UserController extends Controller
         }
 
         return response()->json(['status' => true, 'data' => $user]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        try {
+
+            $id = EncryptionHelper::decrypt_custom($id);
+            $user = User::find($id);
+            if ($user == null) {
+                return response()->json(['status' => false, 'message' => 'User not found']);
+            }
+
+            $data = $request->validate([
+                'name' => 'required',
+                'email' => 'required',
+            ]);
+            $user->update([
+                'name' => $data['name'],
+                'email' => $data['email'],
+            ]);
+            if (isset($data['password'])) {
+                $user->update([
+                    'password' => bcrypt($data['password']),
+                ]);
+            }
+            return response()->json(['status' => true, 'data' => $user, 'message' => 'User updated successfully'], 200);
+        } catch (\Throwable $th) {
+            return response()->json(['message' => false, 'errors' => $th, 'message' => $th->getMessage()], 500);
+        }
+    }
+
+    public function destroy($id)
+    {
+        try {
+            $id = EncryptionHelper::decrypt_custom($id);
+            $user = User::find($id);
+            if ($user == null) {
+                return response()->json(['status' => false, 'message' => 'User not found']);
+            }
+            $user->delete();
+            return response()->json(['status' => true, 'message' => 'User deleted successfully']);
+        } catch (\Throwable $th) {
+            return response()->json(['message' => false, 'errors' => $th, 'message' => $th->getMessage()], 500);
+        }
     }
 }

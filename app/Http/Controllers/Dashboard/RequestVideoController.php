@@ -5,16 +5,20 @@ namespace App\Http\Controllers\Dashboard;
 use App\Events\RequestVideo\RequestVideoApproveEvent;
 use App\Events\RequestVideo\RequestVideoCancelEvent;
 use App\Events\RequestVideo\RequestVideoDeleteEvent;
+use App\Events\RequestVideo\RequestVideoDoneEvent;
 use App\Events\VideoUser\VideoApproveEvent;
 use App\Events\VideoUser\VideoCancelEvent;
+use App\Events\VideoUser\VideoDoneAdminEvent;
 use App\Events\VideoUser\VideoRejectedEvent;
 use App\Helpers\EncryptionHelper;
+use App\Helpers\HitungLamaWaktuMenonton;
 use App\Http\Controllers\Controller;
 use App\Models\RequestVideo\RequestVideo;
 use App\Models\RequestVideo\RequestVideoData;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 
 class RequestVideoController extends Controller
@@ -103,6 +107,26 @@ class RequestVideoController extends Controller
         }
     }
 
+    public function hentikanMenonton($idUser, $idMateri)
+    {
+        try {
+            $id_user = EncryptionHelper::decrypt_custom($idUser);
+            $id_materi = EncryptionHelper::decrypt_custom($idMateri);
+            $cacheKey = 'materi_data_' . $id_user . '_' . $id_materi;
+            Cache::forget($cacheKey);
+            $materi = RequestVideo::where('user_id', $id_user)->where('video_material_id', $id_materi)->where('status', 'sedang melihat')->first();
+            $expiresAt = HitungLamaWaktuMenonton::hitungLamaWaktuMenonton($materi->expired_at, $materi->expires_at);
+            $materi->lama_menonton = $expiresAt;
+            $materi->status = 'done';
+            $materi->save();
+            event(new RequestVideoDoneEvent(RequestVideoController::formatRequestVideoDataForDatatable($materi)));
+            event(new VideoDoneAdminEvent($id_user));
+            return response()->json(['message' => 'Cache cleared successfully']);
+        } catch (\Throwable $th) {
+            return response()->json(['message' => false, 'errors' => $th, 'message' => $th->getMessage()], 500);
+        }
+    }
+
     public static function formatRequestVideoDataForDatatable($requestvideo)
     {
         $data = [];
@@ -113,7 +137,7 @@ class RequestVideoController extends Controller
         $data[] = Carbon::parse($requestvideo->created_at)->format('d-m-Y');
         $data[] = $requestvideo->status == 'pending' ? "<span class='pending text-sm font-medium rounded dark:bg-yellow-900 dark:text-purple-300'>" . $requestvideo->status . "</span>" : "<span class='approve text-sm font-medium rounded dark:bg-yellow-900 dark:text-purple-300'>" . $requestvideo->status . "</span>";
         $data[] = $requestvideo->expires_at ? $requestvideo->expires_at . ' Menit' : '-';
-        $data[] = $requestvideo->lama_menonton ? $requestvideo->lama_menonton . ' Menit' : '-';
+        $data[] = $requestvideo->lama_menonton ? $requestvideo->lama_menonton : '-';
         $data[] = $requestvideo->approved_at ? Carbon::parse($requestvideo->approved_at)->format('d-m-Y') : '-';
         if ((Auth::user()->can('approve-video') || Auth::user()->can('cancel-video')) && $requestvideo->status != 'done') {
             $data[] = null;
@@ -125,13 +149,17 @@ class RequestVideoController extends Controller
             $data[count($data) - 1]
                 .= "<a href='request/cancel/" . EncryptionHelper::encrypt_custom($requestvideo->id) . "' class='inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-800 focus:ring-4 focus:ring-red-300 dark:focus:ring-red-900' id='cancelModalBtn'><i class='fa-solid fa-ban'></i></a>";
         }
+        if (Auth::user()->can('hapus-video') && $requestvideo->status == 'sedang melihat') {
+            $data[count($data) - 1] .=
+                "<a href='request/hentikan/" . EncryptionHelper::encrypt_custom($requestvideo->user_id) . "/" . EncryptionHelper::encrypt_custom($requestvideo->video_material_id) . "' class='inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-800 focus:ring-4 focus:ring-red-300 dark:focus:ring-red-900' id='btnSelesai'>Hentikan</a>";
+        }
         if (Auth::user()->can('edit-video') || Auth::user()->can('hapus-video') && $requestvideo->status == 'pending') {
             $data[] = null;
         }
-        if (Auth::user()->can('edit-video') && $requestvideo->status == 'pending') {
-            $data[count($data) - 1] .=
-                "<a href='request/edit/" . EncryptionHelper::encrypt_custom($requestvideo->id) . "' class='mr-2 inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' id='editModalBtn'>Edit</a>";
-        }
+        // if (Auth::user()->can('edit-video') && $requestvideo->status == 'pending') {
+        //     $data[count($data) - 1] .=
+        //         "<a href='request/edit/" . EncryptionHelper::encrypt_custom($requestvideo->id) . "' class='mr-2 inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800' id='editModalBtn'>Edit</a>";
+        // }
 
         if (Auth::user()->can('hapus-video') && $requestvideo->status == 'pending' || $requestvideo->status == 'done') {
             $data[count($data) - 1] .=

@@ -194,12 +194,14 @@
         $('#default-search').on('input', debouncedSearch);
         $(document).on('click', '#btnUser', function(event) {
             event.preventDefault();
+            let url = $(this).attr('href').split('/').pop();
             let params = getQueryParams($(this).attr('href'));
             if ($(this).attr('href').split('/')[2] == 'lihat') {
                 window.location = $(this).attr('href');
                 return;
             }
-            getRequest($(this).attr('href').split('/').pop(), params);
+            $(this).attr('href', '');
+            getRequest(url, params);
         });
 
 

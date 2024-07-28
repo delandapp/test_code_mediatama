@@ -40,7 +40,7 @@ class AuthController extends Controller
         $request->session()->regenerate();
         $user = Auth::attempt($credensial);
         $request->session()->flash('status', 'success');
-        return response()->json(['status' => true, 'message' => 'success']);
+        return response()->json(['status' => true, 'message' => 'success', 'role' => Auth::user()->getRoleNames()->first()]);
     }
 
     public function logout(Request $request)
@@ -51,6 +51,6 @@ class AuthController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/auth');
+        return redirect('/');
     }
 }

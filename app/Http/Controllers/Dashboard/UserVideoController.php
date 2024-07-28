@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Events\RequestVideo\RequestVideoCreateEvent;
 use App\Events\RequestVideo\RequestVideoDoneEvent;
+use App\Events\RequestVideo\RequestVideoMelihatEvent;
+use App\Events\VideoUser\VideoDoneAdminEvent;
 use App\Events\VideoUser\VideoNotifikasiEvent;
 use App\Events\VideoUser\VideoRequestEvent;
+use App\Helpers\HitungLamaWaktuMenonton;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\User\VideoResource;
 use App\Models\Materi\Materi;
@@ -103,24 +106,26 @@ class UserVideoController extends Controller
             $userRequest = RequestVideo::where('user_id', auth()->user()->id)
                 ->where('video_material_id', $id)
                 ->where('status', 'sedang melihat')
-                ->first();
+                ->latest()->first();
 
             $materi =
                 Materi::with(['videoRequests' => function ($query) use ($id) {
                     $query->where('user_id', auth()->user()->id)->where('status', 'sedang melihat')->where('video_material_id', $id);
-                }])->find($id)->first();
+                }])->find($id);
             if ($userRequest) {
                 $materi->expires_at = $materi->videoRequests[0]->expires_at;
                 $materi->expired_at = Carbon::parse($materi->videoRequests[0]->expired_at)->timestamp * 1000;
+                $materi->status = $materi->videoRequests[0]->status;
                 $materiData = $materi;
             } else {
-                $dataRequestVideo = RequestVideo::where('user_id', auth()->user()->id)->where('video_material_id', $id)->where('status', 'approved')->first();
+                $dataRequestVideo = RequestVideo::where('user_id', auth()->user()->id)->where('video_material_id', $id)->where('status', 'approved')->latest()->first();
                 if (!$dataRequestVideo) {
                     return response()->json(['message' => 'Materi not found'], 404);
                 }
                 $dataRequestVideo->status = 'sedang melihat';
                 $dataRequestVideo->expired_at = Carbon::now()->addMinutes((int) $dataRequestVideo->expires_at);
                 $dataRequestVideo->save();
+                event(new RequestVideoMelihatEvent(RequestVideoController::formatRequestVideoDataForDatatable($dataRequestVideo)));
                 $materiData = Cache::remember($cacheKey, (int) $materi->expires_at, function () use ($id) {
                     $materi = Materi::with(['videoRequests' => function ($query) use ($id) {
                         $query->where('user_id', auth()->user()->id)->where('video_material_id', $id)->where('status', 'sedang melihat');
@@ -146,12 +151,8 @@ class UserVideoController extends Controller
         $cacheKey = 'materi_data_' . auth()->user()->id . '_' . $id;
         Cache::forget($cacheKey);
         $materi = RequestVideo::where('user_id', auth()->user()->id)->where('video_material_id', $id)->where('status', 'sedang melihat')->first();
-        $expiresAt = Carbon::parse($materi->approved_at)->addMinutes((int) $materi->expires_at);
-        if ($expiresAt->isPast()) {
-            $materi->lama_menonton = 0;
-        } else {
-            $materi->lama_menonton = $expiresAt->diffInMinutes(Carbon::now());
-        }
+        $expiresAt = HitungLamaWaktuMenonton::hitungLamaWaktuMenonton($materi->expired_at, $materi->expires_at);
+        $materi->lama_menonton = $expiresAt;
         $materi->status = 'done';
         $materi->save();
         event(new VideoNotifikasiEvent(auth()->user()->name . ' Telah Selesai Melihat Video'));

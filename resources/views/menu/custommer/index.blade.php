@@ -149,18 +149,28 @@
 
                         Toast.fire({
                             icon: 'error',
-                            title: 'Terjadi kesalahan saat login.' // Atau pesan umum lainnya
+                            title: 'Terjadi kesalahan saat add.'
                         });
                     }).finally(() => {
                         $('#ModalButtonText , #loading-button').toggleClass('hidden');
                     })
                 } else {
                     $('#Modal').toggleClass('hidden').toggleClass('flex');
-                    axios.put(url, {
-                        name: name,
-                        email: email,
-                        password: password,
-                        confirm_password: confirm_password,
+                    $('#form input').removeClass('border-red-500');
+                    $('#form .error-message').text('');
+                    axios.post(url, formData).then(response => {
+                        table.draw(false);
+                        Toast.fire({
+                            icon: 'success',
+                            title: response.data.message
+                        })
+                    }).catch(error => {
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'Terjadi kesalahan saat edit.'
+                        });
+                    }).finally(() => {
+                        $('#ModalButtonText , #loading-button').toggleClass('hidden');
                     })
                 }
             })

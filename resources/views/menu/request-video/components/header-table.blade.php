@@ -49,7 +49,7 @@
                 <div class="relative mt-1 lg:w-64 xl:w-96">
                     <input type="search" name="search-users" id="video-search"
                         class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                        placeholder="Search for users">
+                        placeholder="Search for title video">
                 </div>
                 <div class="flex pl-0 mt-3 space-x-1 sm:pl-2 sm:mt-0">
                     <a href="#"

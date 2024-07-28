@@ -74,29 +74,32 @@
                 $('#login-btn, #loading-spinner').toggleClass('hidden');
 
                 const formData = $(this).serialize();
-                $('.error-message').empty(); // Clear error messages
-                $('.input-field').removeClass('error'); // Clear error styling
+                $('.error-message').empty();
+                $('.input-field').removeClass('error');
 
                 axios.post('/', formData)
                     .then(response => {
-                        if (response.data.message === 'success') {
+                        if (response.data.message === 'success' && response.data.role ===
+                            'superadmin') {
                             window.location.href = '/user';
+                        } else {
+                            window.location.href = '/user-video';
                         }
                     })
                     .catch(error => {
-                        const errors = error.response.data.errors; // Ambil objek error
+                        const errors = error.response.data.errors;
 
                         for (const field in errors) {
                             $(`input[name="${field}"]`).addClass(
-                                'error'); // Tambahkan class error pada input
+                                'error');
                             $(`input[name="${field}"]`).next('.error-message').text(errors[field][
                                 0
-                            ]); // Tampilkan pesan error
+                            ]);
                         }
 
                         Toast.fire({
                             icon: 'error',
-                            title: 'Terjadi kesalahan saat login.' // Atau pesan umum lainnya
+                            title: 'Terjadi kesalahan saat login.' 
                         });
                     }).finally(() => {
                         $('#login-btn, #loading-spinner').toggleClass('hidden');

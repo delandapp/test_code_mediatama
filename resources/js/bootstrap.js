@@ -45,7 +45,7 @@ window.Echo.channel("laravel_database_approve-channel").listen(
         const notifData = e.message;
 
         axios
-            .get("check-permission/approve-video")
+            .get("/check-permission/approve-video")
             .then((response) => {
                 if (response.data.allowed) {
                     ToastNotifikasi.fire({
